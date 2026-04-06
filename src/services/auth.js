@@ -9,6 +9,19 @@ const EXTENSION_GOOGLE_SCOPES = ["openid", "email", "profile"];
 let storedState = null;
 let storedCodeVerifier = null;
 
+function isAllowedProxyUrl(value) {
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === "https:") return true;
+    return (
+      parsed.protocol === "http:" &&
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")
+    );
+  } catch {
+    return false;
+  }
+}
+
 function generateRandomState() {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
@@ -90,7 +103,6 @@ async function signInWithChromeIdentity() {
   authUrl.searchParams.set("code_challenge", codeChallenge);
   authUrl.searchParams.set("code_challenge_method", "S256");
   authUrl.searchParams.set("prompt", "select_account");
-  authUrl.searchParams.set("access_type", "offline");
 
   const responseUrl = await chrome.identity.launchWebAuthFlow({
     url: authUrl.toString(),
@@ -172,6 +184,12 @@ async function exchangeCodeForToken(code, codeVerifier, redirectUri) {
     throw new Error("Missing token exchange endpoint configuration");
   }
 
+  if (!isAllowedProxyUrl(baseUrl)) {
+    throw new Error(
+      "Invalid token exchange endpoint. Use HTTPS (or localhost for dev).",
+    );
+  }
+
   const tokenExchangeUrl = `${baseUrl.replace(/\/$/, "")}/exchangeAuthCode`;
 
   const response = await fetch(tokenExchangeUrl, {
@@ -179,6 +197,9 @@ async function exchangeCodeForToken(code, codeVerifier, redirectUri) {
     headers: {
       "Content-Type": "application/json",
     },
+    cache: "no-store",
+    credentials: "omit",
+    referrerPolicy: "no-referrer",
     body: JSON.stringify({
       code,
       codeVerifier,

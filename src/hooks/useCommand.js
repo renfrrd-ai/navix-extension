@@ -3,6 +3,21 @@ import { routeQuery } from "@/services/router";
 import { buildSearchUrl, findExactPrefix } from "@/utils/sites";
 import useAppStore from "./useAppStore";
 
+const MAX_ROUTABLE_QUERY_LENGTH = 320;
+
+function containsSensitiveInput(text = "") {
+  const value = String(text);
+  const lower = value.toLowerCase();
+
+  return (
+    /\b(password|passcode|api[_-]?key|secret|private[_-]?key|bearer|jwt|token|otp|2fa)\b/.test(
+      lower,
+    ) ||
+    /-----begin [a-z ]*private key-----/i.test(value) ||
+    /(?:^|\s)(?:sk|ghp|xoxb|xoxp|eyj)[a-z0-9._-]{16,}/i.test(value)
+  );
+}
+
 export function useCommand() {
   const { sites, addHistory, showToast } = useAppStore();
   const [value, setValue] = useState("");
@@ -184,6 +199,19 @@ export function useCommand() {
 
       // 3. Natural language → AI router
       if (q.includes(" ")) {
+        if (containsSensitiveInput(q)) {
+          showToast(
+            "Sensitive input detected. Query not sent to AI router.",
+            "error",
+          );
+          return;
+        }
+
+        if (q.length > MAX_ROUTABLE_QUERY_LENGTH) {
+          showToast("Query is too long for AI routing.", "error");
+          return;
+        }
+
         setAi(true);
         try {
           const data = await routeQuery(q);
@@ -212,7 +240,6 @@ export function useCommand() {
             message: err instanceof Error ? err.message : String(err),
             code: err?.code,
             status: err?.status,
-            stack: err instanceof Error ? err.stack : undefined,
             timestamp: new Date().toISOString(),
           });
 

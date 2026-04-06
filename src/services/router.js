@@ -1,12 +1,25 @@
 import { getAuth } from "firebase/auth";
 import { app } from "./firebase";
 
-const NAVIX_PROXY_BASE = import.meta.env.VITE_NAVIX_PROXY_URL || "";
+const NAVIX_PROXY_BASE = (import.meta.env.VITE_NAVIX_PROXY_URL || "").trim();
 
 if (!NAVIX_PROXY_BASE) {
   console.warn(
     "[Navix Router] Missing VITE_NAVIX_PROXY_URL - AI routing will not work.",
   );
+}
+
+function isAllowedProxyUrl(value) {
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === "https:") return true;
+    return (
+      parsed.protocol === "http:" &&
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")
+    );
+  } catch {
+    return false;
+  }
 }
 
 async function getAuthToken() {
@@ -41,12 +54,21 @@ async function navixRequest(path, body) {
     throw new Error("Missing VITE_NAVIX_PROXY_URL for Navix API proxy.");
   }
 
+  if (!isAllowedProxyUrl(NAVIX_PROXY_BASE)) {
+    throw new Error(
+      "Invalid VITE_NAVIX_PROXY_URL. Use HTTPS (or localhost for dev).",
+    );
+  }
+
   const token = await getAuthToken();
   const headers = buildHeaders(token);
 
   const res = await fetch(`${NAVIX_PROXY_BASE}${path}`, {
     method: "POST",
     headers,
+    cache: "no-store",
+    credentials: "omit",
+    referrerPolicy: "no-referrer",
     body: JSON.stringify(body),
   });
 

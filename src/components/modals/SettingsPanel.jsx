@@ -4,7 +4,12 @@ import { GhostButton } from "@/components/ui/Button";
 import { THEMES, FONTS } from "@/utils/themes";
 import useAppStore from "@/hooks/useAppStore";
 import { signOut } from "@/services/auth";
-import { forceSyncToFirestore, updateLocalData } from "@/services/data";
+import {
+  forceSyncToFirestore,
+  getPrivacyDiagnostics,
+  resetPrivacyLocalData,
+  updateLocalData,
+} from "@/services/data";
 import Input from "@/components/ui/Input";
 
 export default function SettingsPanel({ open, onClose }) {
@@ -28,6 +33,7 @@ export default function SettingsPanel({ open, onClose }) {
   const photo = user?.photoURL;
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(name);
+  const [privacyReport, setPrivacyReport] = useState(null);
 
   useEffect(() => {
     setDraftName(name);
@@ -67,12 +73,30 @@ export default function SettingsPanel({ open, onClose }) {
     showToast("Name saved");
   }
 
+  function handlePrivacyReport() {
+    const report = getPrivacyDiagnostics(user?.uid || "");
+    setPrivacyReport(report);
+    showToast("Privacy report updated");
+  }
+
+  function handlePrivacyReset() {
+    const confirmed = window.confirm(
+      "Reset local Navix data on this device? This clears local profile cache, history, and hint flags.",
+    );
+    if (!confirmed) return;
+
+    resetPrivacyLocalData();
+    setPrivacyReport(getPrivacyDiagnostics(user?.uid || ""));
+    showToast("Local privacy data reset", "info");
+    window.location.reload();
+  }
+
   return (
     <Panel open={open} onClose={onClose} title="Settings">
       <div className="font-app flex items-center gap-[0.85rem] rounded-[14px] border-[1.5px] border-app bg-app-3 px-[1.1rem] py-4">
-        <div className="bg-accent-gradient flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-base font-semibold text-white">
+        <div className="bg-accent-gradient flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-base font-semibold text-white">
           {photo ? (
-            <img src={photo} alt="" className="h-full w-full object-cover" />
+            <img src={photo} alt="" className="size-full object-cover" />
           ) : (
             initial
           )}
@@ -139,17 +163,19 @@ export default function SettingsPanel({ open, onClose }) {
               key={t.id}
               onClick={() => setTheme(t.id)}
               className={`cursor-pointer overflow-hidden rounded-[9px] border-2 transition-[border-color,transform] duration-200 ${
-                theme === t.id ? "scale-[1.04] border-[var(--accent)]" : "border-app"
+                theme === t.id
+                  ? "scale-[1.04] border-[var(--accent)]"
+                  : "border-app"
               }`}
             >
               <div
                 className={`flex h-11 items-center justify-center gap-0.75 ${t.swatchBgClass}`}
               >
                 <div
-                  className={`h-2.25 w-2.25 rounded-full ${t.swatchAClass}`}
+                  className={`size-2.25 rounded-full ${t.swatchAClass}`}
                 />
                 <div
-                  className={`h-2.25 w-2.25 rounded-full opacity-60 ${t.swatchBClass}`}
+                  className={`size-2.25 rounded-full opacity-60 ${t.swatchBClass}`}
                 />
               </div>
               <div className="font-app bg-app-3 px-[0.4rem] py-[0.3rem] text-center text-[0.64rem] text-app-2">
@@ -179,6 +205,31 @@ export default function SettingsPanel({ open, onClose }) {
             </div>
           ))}
         </div>
+      </SettingGroup>
+
+      <SettingGroup label="Privacy">
+        <p className="font-app mb-3 text-[0.79rem] leading-[1.6] text-app-2">
+          Review your current local data footprint and privacy controls.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <GhostButton onClick={handlePrivacyReport}>
+            Show Data Summary
+          </GhostButton>
+          <GhostButton onClick={handlePrivacyReset} danger>
+            Reset Local Privacy Data
+          </GhostButton>
+        </div>
+
+        {privacyReport && (
+          <div className="mt-3 rounded-[10px] border-[1.5px] border-app bg-app-3 p-3">
+            <div className="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-app-3">
+              Privacy Summary
+            </div>
+            <pre className="mt-2 overflow-x-auto text-[0.72rem] leading-[1.55] text-app-2">
+              {JSON.stringify(privacyReport, null, 2)}
+            </pre>
+          </div>
+        )}
       </SettingGroup>
 
       <div className="border-t border-app pt-5">
