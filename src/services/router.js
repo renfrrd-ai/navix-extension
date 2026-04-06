@@ -1,3 +1,6 @@
+import { getAuth } from "firebase/auth";
+import { app } from "./firebase";
+
 const NAVIX_PROXY_BASE = import.meta.env.VITE_NAVIX_PROXY_URL || "";
 
 if (!NAVIX_PROXY_BASE) {
@@ -8,9 +11,6 @@ if (!NAVIX_PROXY_BASE) {
 
 async function getAuthToken() {
   try {
-    const { getAuth } = await import("firebase/auth");
-    const { app } = await import("./firebase");
-
     const auth = getAuth(app);
     const user = auth.currentUser;
 
