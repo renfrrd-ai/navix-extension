@@ -166,13 +166,13 @@ async function signInWithChromeIdentity() {
 }
 
 async function exchangeCodeForToken(code, codeVerifier, redirectUri) {
-  const tokenExchangeUrl = import.meta.env.VITE_NAVIX_PROXY_URL
-    ? `${import.meta.env.VITE_NAVIX_PROXY_URL.replace(/\/[^/]*$/, "")}/exchangeAuthCode`
-    : "";
+  const baseUrl = import.meta.env.VITE_NAVIX_PROXY_URL || "";
 
-  if (!tokenExchangeUrl) {
+  if (!baseUrl) {
     throw new Error("Missing token exchange endpoint configuration");
   }
+
+  const tokenExchangeUrl = `${baseUrl.replace(/\/$/, "")}/exchangeAuthCode`;
 
   const response = await fetch(tokenExchangeUrl, {
     method: "POST",
