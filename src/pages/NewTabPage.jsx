@@ -165,7 +165,7 @@ export default function NewTabPage() {
                   </button>
                   <button
                     onClick={dismissHelpHint}
-                    className="cursor-pointer rounded-[9px] border-[1.5px] border-app-2 bg-app-3 px-4 py-[0.7rem] text-[0.78rem] font-medium text-app-2 transition-colors duration-200 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                    className="cursor-pointer rounded-[9px] border-[1.5px] border-app-2 bg-app-3 px-4 py-[0.7rem] text-[0.78rem] font-medium text-app-2 transition-colors duration-200 hover:border-(--accent) hover:text-(--accent)"
                   >
                     Maybe later
                   </button>
