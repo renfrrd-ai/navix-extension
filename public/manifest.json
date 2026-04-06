@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Navix",
+  "short_name": "Navix",
+  "description": "Smart Command Hub for your new tab.",
+  "version": "1.0.0",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "omnibox": {
+    "keyword": "nx"
+  },
+  "icons": {
+    "16": "navix-1024.png",
+    "32": "navix-1024.png",
+    "48": "navix-1024.png",
+    "128": "navix-1024.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "storage",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://us-central1-navix-4771e.cloudfunctions.net/*",
+    "https://*.googleapis.com/*",
+    "https://*.firebaseapp.com/*",
+    "https://*.gstatic.com/*",
+    "https://*.google.com/*",
+    "https://securetoken.googleapis.com/*",
+    "https://www.googleapis.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://us-central1-navix-4771e.cloudfunctions.net https://*.googleapis.com https://*.firebaseapp.com https://*.gstatic.com https://*.google.com https://securetoken.googleapis.com https://www.googleapis.com;"
+  }
+}
