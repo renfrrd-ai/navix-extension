@@ -148,7 +148,7 @@ export default function NewTabPage() {
           {showHelpHint && (
             <div className="animate-fade-up absolute top-[calc(100%+0.9rem)] right-0 z-30 w-full max-w-[320px]">
               <div className="relative rounded-[18px] border-[1.5px] border-app-2 bg-app-2 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.38)]">
-                <div className="absolute -top-2 right-9 h-4 w-4 rotate-45 border-t-[1.5px] border-l-[1.5px] border-app-2 bg-app-2" />
+                <div className="absolute -top-2 right-9 size-4 rotate-45 border-t-[1.5px] border-l-[1.5px] border-app-2 bg-app-2" />
                 <p className="mb-1 text-[0.96rem] font-semibold text-app">
                   Welcome, {firstName}
                 </p>

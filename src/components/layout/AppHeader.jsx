@@ -103,9 +103,9 @@ export default function AppHeader({
             <HelpIcon />
           </IconButton>
           {helpHighlighted && (
-            <span className="pointer-events-none absolute -top-1 -right-1 flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-(--accent) opacity-70" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-(--accent2)" />
+            <span className="pointer-events-none absolute -top-1 -right-1 flex size-2.5">
+              <span className="absolute inline-flex size-full animate-pulse rounded-full bg-(--accent) opacity-70" />
+              <span className="relative inline-flex size-2.5 rounded-full bg-(--accent2)" />
             </span>
           )}
         </div>
@@ -113,10 +113,10 @@ export default function AppHeader({
         <button
           onClick={onSettings}
           title="Account"
-          className="bg-accent-gradient flex h-8.5 w-8.5 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 text-[0.82rem] font-semibold text-white"
+          className="bg-accent-gradient flex size-8.5 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 text-[0.82rem] font-semibold text-white"
         >
           {photo ? (
-            <img src={photo} alt="" className="h-full w-full object-cover" />
+            <img src={photo} alt="" className="size-full object-cover" />
           ) : (
             initial
           )}

@@ -383,7 +383,7 @@
   }
 
   .ui-icon-button {
-    @apply flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-[9px] border-[1.5px] transition-colors duration-200;
+    @apply flex size-9.5 shrink-0 items-center justify-center rounded-[9px] border-[1.5px] transition-colors duration-200;
     background: var(--bg3);
     border-color: var(--border2);
     color: var(--text2);

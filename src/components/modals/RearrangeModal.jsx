@@ -77,7 +77,7 @@ export default function RearrangeModal({ open, onClose }) {
           }`}
         >
           <span className="cursor-grab text-[1rem] text-app-3">⠿</span>
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-[7px] bg-app-4">
+          <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-[7px] bg-app-4">
             <SiteIcon site={site} size={22} />
           </div>
           <span className="flex-1 text-[0.84rem] text-app">{site.name}</span>

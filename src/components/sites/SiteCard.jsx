@@ -46,7 +46,7 @@ export default function SiteCard({ site, onEdit, onCmdFill }) {
         className="group font-app relative flex cursor-pointer flex-col items-center gap-[0.6rem] rounded-[14px] border-[1.5px] border-app bg-app-2 px-2 py-[1.15rem] pb-[0.95rem] transition-[border-color,background,transform] duration-200 hover:-translate-y-[3px] hover:border-[var(--accent)] hover:bg-[var(--accent-glow)]"
       >
         <div
-          className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl"
+          className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl"
           style={iconFrameStyle}
         >
           <SiteIcon site={site} size={40} />
@@ -64,7 +64,7 @@ export default function SiteCard({ site, onEdit, onCmdFill }) {
 
         <button
           onClick={openMenu}
-          className="kebab absolute top-1.25 right-1.25 hidden h-5 w-5 cursor-pointer items-center justify-center rounded-[5px] border border-app-2 bg-app-3 text-[0.85rem] leading-none text-app-2 group-hover:flex"
+          className="kebab absolute top-1.25 right-1.25 hidden size-5 cursor-pointer items-center justify-center rounded-[5px] border border-app-2 bg-app-3 text-[0.85rem] leading-none text-app-2 group-hover:flex"
         >
           ⋮
         </button>

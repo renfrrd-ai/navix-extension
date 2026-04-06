@@ -36,7 +36,7 @@ export default function HistoryModal({ open, onClose, onFill }) {
               className="font-app flex cursor-pointer items-center gap-[0.9rem] rounded-[10px] border-[1.5px] border-app bg-app-3 px-4 py-[0.82rem] transition-colors duration-150 hover:border-app-2 hover:bg-app-2"
             >
               <div
-                className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg text-base"
+                className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg text-base"
                 style={site ? getSiteIconFrameStyle(site) : undefined}
               >
                 {site ? (
@@ -46,7 +46,7 @@ export default function HistoryModal({ open, onClose, onFill }) {
                 ) : entry.logoUrl ? (
                   <img
                     src={entry.logoUrl}
-                    className="h-6 w-6 rounded-sm object-contain"
+                    className="size-6 rounded-sm object-contain"
                     alt=""
                   />
                 ) : entry.ai ? (

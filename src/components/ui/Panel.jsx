@@ -20,7 +20,7 @@ export default function Panel({ open, onClose, title, children }) {
           <span>{title}</span>
           <button
             onClick={onClose}
-            className="flex h-8.5 w-8.5 cursor-pointer items-center justify-center rounded-[9px] border-[1.5px] border-app-2 bg-app-3 text-[0.9rem] text-app-2"
+            className="flex size-8.5 cursor-pointer items-center justify-center rounded-[9px] border-[1.5px] border-app-2 bg-app-3 text-[0.9rem] text-app-2"
           >
             ✕
           </button>

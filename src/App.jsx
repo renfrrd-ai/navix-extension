@@ -22,7 +22,7 @@ export default function App() {
       {/* Show loading spinner while auth initialises */}
       {!authReady && (
         <div className="fixed inset-0 flex items-center justify-center bg-app">
-          <div className="h-9 w-9 rounded-full border-[3px] border-app-2 border-t-(--accent) animate-spin-slow" />
+          <div className="size-9 rounded-full border-[3px] border-app-2 border-t-(--accent) animate-spin-slow" />
         </div>
       )}
 

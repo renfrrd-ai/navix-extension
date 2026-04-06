@@ -35,7 +35,7 @@ export default function HistoryList({ onFill, onSeeMore }) {
               className="font-app flex cursor-pointer items-center gap-[0.85rem] rounded-[9px] border-[1.5px] border-app bg-app-2 px-4 py-[0.7rem] transition-colors duration-150 hover:border-app-2 hover:bg-app-3"
             >
               <div
-                className="flex h-7.5 w-7.5 shrink-0 items-center justify-center overflow-hidden rounded-lg text-base"
+                className="flex size-7.5 shrink-0 items-center justify-center overflow-hidden rounded-lg text-base"
                 style={site ? getSiteIconFrameStyle(site) : undefined}
               >
                 {site ? (
@@ -45,7 +45,7 @@ export default function HistoryList({ onFill, onSeeMore }) {
                 ) : entry.logoUrl ? (
                   <img
                     src={entry.logoUrl}
-                    className="h-5.5 w-5.5 rounded-sm object-contain"
+                    className="size-5.5 rounded-sm object-contain"
                     alt=""
                   />
                 ) : entry.ai ? (

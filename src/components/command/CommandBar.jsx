@@ -36,7 +36,7 @@ const StarIcon = () => (
 );
 const LoaderDot = ({ delay = "0ms" }) => (
   <span
-    className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-[pulse_1.1s_ease-in-out_infinite]"
+    className="size-1.5 rounded-full bg-[var(--accent)] animate-[pulse_1.1s_ease-in-out_infinite]"
     style={{ animationDelay: delay }}
   />
 );
@@ -112,7 +112,7 @@ export default function CommandBar({
               onClick={() => pickSuggestion(s.prefix)}
               className="flex cursor-pointer items-center gap-[0.85rem] border-b border-app px-[1.2rem] py-[0.85rem] text-[0.88rem] text-app-2 transition-colors duration-150 hover:bg-[var(--accent-glow)] hover:text-app"
             >
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-[7px] bg-app-3">
+              <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-[7px] bg-app-3">
                 <SiteIcon site={s} size={22} />
               </div>
               <span className="flex-1">{s.name}</span>

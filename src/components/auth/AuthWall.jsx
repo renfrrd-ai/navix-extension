@@ -105,13 +105,13 @@ export default function AuthWall() {
           <div className="grid w-full grid-cols-1 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="relative flex flex-col justify-center gap-7 border-b border-app px-8 py-9 lg:border-r lg:border-b-0 lg:px-10 lg:py-10">
               <div className="inline-flex w-fit items-center gap-3 rounded-full border border-app bg-app-3 px-4 py-2 text-[0.74rem] font-semibold tracking-[0.08em] text-app-2">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--accent)]" />
+                <span className="size-2 animate-pulse rounded-full bg-[var(--accent)]" />
                 Smart Command Hub
               </div>
 
               <div className="flex max-w-[460px] flex-col gap-6">
                 <div className="relative flex items-center gap-4">
-                  <div className="absolute left-3 h-16 w-16 rounded-full bg-[var(--accent-glow)] blur-2xl" />
+                  <div className="absolute left-3 size-16 rounded-full bg-[var(--accent-glow)] blur-2xl" />
                   <div className="relative rounded-[22px] border border-app bg-app-3 p-4">
                     <NavixLogo size={58} />
                   </div>

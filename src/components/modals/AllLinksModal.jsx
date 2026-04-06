@@ -47,7 +47,7 @@ export default function AllLinksModal({ open, onClose, onCmdFill }) {
             className="font-app flex cursor-pointer items-center gap-[0.7rem] rounded-[9px] border-[1.5px] border-app bg-app-3 px-4 py-[0.9rem] transition-colors duration-150 hover:border-[var(--accent)] hover:bg-[var(--accent-glow)]"
           >
             <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg"
+              className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg"
               style={getSiteIconFrameStyle(site)}
             >
               <SiteIcon site={site} size={28} />
