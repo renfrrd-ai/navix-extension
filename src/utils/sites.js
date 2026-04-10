@@ -361,8 +361,12 @@ export function buildSitesForIndustry(industry = "general") {
   return base;
 }
 
+export function siteSupportsSearch(site) {
+  return Boolean(site?.searchUrl && /\{query\}|%s/i.test(site.searchUrl));
+}
+
 export function buildSearchUrl(site, query) {
-  if (!query) return site.baseUrl || "";
+  if (!siteSupportsSearch(site) || !query) return site?.baseUrl || "";
 
   const rawQuery = query.trim();
   const slugRules = site.slugRules || site.slug_rules || {};
@@ -376,7 +380,17 @@ export function buildSearchUrl(site, query) {
   const finalQuery =
     slugRules.space_encoding === "+" ? encoded.replace(/%20/g, "+") : encoded;
 
-  return site.searchUrl.replace(/\{query\}/gi, finalQuery);
+  const template = String(site.searchUrl).replace(/%s/gi, "{query}");
+  return template.replace(/\{query\}/gi, finalQuery);
+}
+
+export function buildSiteTargetUrl(site, query) {
+  const q = String(query || "").trim();
+  if (!site) return "";
+  if (q && siteSupportsSearch(site)) {
+    return buildSearchUrl(site, q);
+  }
+  return site.baseUrl || "";
 }
 
 function normalizeText(value = "") {
@@ -415,15 +429,17 @@ export function ensureSearchUrlMatchesBase(baseUrl, candidateSearchUrl) {
   const normalizedBase = baseUrl?.startsWith("http")
     ? baseUrl
     : `https://${baseUrl || ""}`;
-  const fallback = `${normalizedBase.replace(/\/+$/, "")}/search?q={query}`;
 
-  if (!candidateSearchUrl) return fallback;
-  if (!isSameSiteDomain(candidateSearchUrl, normalizedBase)) return fallback;
-  if (!/\{query\}|%s/i.test(candidateSearchUrl)) {
-    const sep = candidateSearchUrl.includes("?") ? "&" : "?";
-    return `${candidateSearchUrl}${sep}q={query}`;
-  }
-  return candidateSearchUrl;
+  if (!candidateSearchUrl) return "";
+  if (!isSameSiteDomain(candidateSearchUrl, normalizedBase)) return "";
+
+  const normalizedTemplate = String(candidateSearchUrl).replace(
+    /%s/gi,
+    "{query}",
+  );
+  if (!/\{query\}/i.test(normalizedTemplate)) return "";
+
+  return normalizedTemplate;
 }
 
 export function findMentionedSite(sites, rawQuery) {

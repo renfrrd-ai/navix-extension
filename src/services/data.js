@@ -76,9 +76,12 @@ function sanitizeShortcut(item, index = 0) {
     .toLowerCase()
     .replace(/[^a-z0-9_-]/g, "");
   const baseUrl = sanitizeUrl(item.baseUrl);
-  const searchUrl = sanitizeUrl(item.searchUrl);
+  const rawSearchUrl = sanitizeUrl(item.searchUrl);
+  const searchUrl = /\{query\}|%s/i.test(rawSearchUrl)
+    ? rawSearchUrl.replace(/%s/gi, "{query}")
+    : "";
 
-  if (!id || !prefix || !baseUrl || !searchUrl) {
+  if (!id || !prefix || !baseUrl) {
     return null;
   }
 
@@ -88,7 +91,7 @@ function sanitizeShortcut(item, index = 0) {
     icon: sanitizeText(item.icon, 32),
     prefix,
     bg: sanitizeText(item.bg, 24),
-    searchUrl,
+    ...(searchUrl ? { searchUrl } : {}),
     baseUrl,
     ql: Boolean(item.ql),
     builtin: Boolean(item.builtin),
@@ -382,6 +385,9 @@ export function updateLocalData(patch) {
   const current = readLocal() || defaultUserDoc();
   const safePatch = sanitizeUserPatch(patch || {});
   const updated = sanitizeUserDoc({ ...current, ...safePatch });
+  if (typeof current?._uid === "string" && current._uid) {
+    updated._uid = current._uid;
+  }
   writeLocal(updated);
   writeSyncMeta({ ...readSyncMeta(), hasChanges: true });
   return updated;

@@ -88,7 +88,13 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
         ql: addToQL,
       };
       if (!editSite.builtin || devMode) patch.baseUrl = baseUrl;
-      if (devMode && searchUrl.trim()) patch.searchUrl = searchUrl.trim();
+      if (devMode) {
+        const normalizedTemplate = ensureSearchUrlMatchesBase(
+          baseUrl,
+          searchUrl.trim(),
+        );
+        patch.searchUrl = normalizedTemplate;
+      }
       updateSite(editSite.id, patch);
       showToast(`${name} updated`);
       setSaving(false);
@@ -96,12 +102,12 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
       return;
     }
 
-    // New site — resolve search URL
-    let resolvedSearchUrl = baseUrl + "/search?q={query}";
+    // New site — AI may return either a search template or a direct/open-only route.
+    let resolvedSearchUrl = "";
     let shortcutData = null;
 
     if (devMode && searchUrl.trim()) {
-      resolvedSearchUrl = searchUrl.trim();
+      resolvedSearchUrl = ensureSearchUrlMatchesBase(baseUrl, searchUrl.trim());
     } else {
       setStatus({ msg: "Creating shortcut via Navix API…", type: "loading" });
       try {
@@ -112,25 +118,24 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
         });
 
         if (shortcutData.template) {
-          resolvedSearchUrl = shortcutData.template
-            .replace(/\{query\}/gi, "{query}")
-            .replace(/%s/gi, "{query}");
+          resolvedSearchUrl = ensureSearchUrlMatchesBase(
+            baseUrl,
+            shortcutData.template,
+          );
         }
       } catch {
         setStatus({
-          msg: "Navix API could not create the shortcut. Using a safe fallback pattern instead.",
+          msg: "Navix API could not create a route template. This shortcut will open the site directly.",
           type: "error",
         });
       }
     }
 
-    resolvedSearchUrl = ensureSearchUrlMatchesBase(baseUrl, resolvedSearchUrl);
-
     const newSite = {
       id: "c_" + Date.now(),
       name: name.trim(),
       baseUrl,
-      searchUrl: resolvedSearchUrl,
+      ...(resolvedSearchUrl ? { searchUrl: resolvedSearchUrl } : {}),
       prefix: cleanPrefix,
       emoji,
       logoUrl,
@@ -179,7 +184,7 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
           hint={
             isBuiltinLocked
               ? "Switch to Dev Mode to edit built-in URLs."
-              : "We'll resolve the search URL through the Navix backend automatically."
+              : "Navix AI will detect whether this site needs a search template or just a direct URL."
           }
         >
           <Input
@@ -213,8 +218,7 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
         <Field
           label={
             <>
-              Shortcut Prefix{" "}
-              <span className="font-normal text-danger">*</span>
+              Shortcut Prefix <span className="font-normal text-danger">*</span>
             </>
           }
           hint="Required. This is how the site is triggered from Navix."

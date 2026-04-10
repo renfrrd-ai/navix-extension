@@ -1,22 +1,11 @@
 import { useState, useRef, useCallback } from "react";
 import { routeQuery } from "@/services/router";
-import { buildSearchUrl, findExactPrefix } from "@/utils/sites";
+import {
+  buildSiteTargetUrl,
+  findExactPrefix,
+  siteSupportsSearch,
+} from "@/utils/sites";
 import useAppStore from "./useAppStore";
-
-const MAX_ROUTABLE_QUERY_LENGTH = 320;
-
-function containsSensitiveInput(text = "") {
-  const value = String(text);
-  const lower = value.toLowerCase();
-
-  return (
-    /\b(password|passcode|api[_-]?key|secret|private[_-]?key|bearer|jwt|token|otp|2fa)\b/.test(
-      lower,
-    ) ||
-    /-----begin [a-z ]*private key-----/i.test(value) ||
-    /(?:^|\s)(?:sk|ghp|xoxb|xoxp|eyj)[a-z0-9._-]{16,}/i.test(value)
-  );
-}
 
 export function useCommand() {
   const { sites, addHistory, showToast } = useAppStore();
@@ -25,88 +14,34 @@ export function useCommand() {
   const [suggestions, setSugg] = useState([]);
   const inputRef = useRef(null);
   const histIdxRef = useRef(-1);
-  const platformAliasesRef = useRef({
-    "google maps": "maps",
-    google_maps: "maps",
-    maps: "maps",
-    youtube: "yt",
-    "you tube": "yt",
-    chatgpt: "gpt",
-    "chat gpt": "gpt",
-    wikipedia: "wiki",
-    wiki: "wiki",
-    amazon: "amz",
-    github: "gh",
-    "stack overflow": "so",
-    stackoverflow: "so",
-    linkedin: "li",
-    instagram: "ig",
-    tiktok: "tt",
-    "twitter x": "tw",
-    twitter: "tw",
-    x: "tw",
-  });
 
-  const normalizePlatform = (value = "") =>
-    String(value)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, " ")
-      .trim();
-
-  const findSiteByPlatform = useCallback(
-    (platformName) => {
-      if (!platformName) return null;
-      const needle = normalizePlatform(platformName);
-      const aliasedPrefix = platformAliasesRef.current[needle];
-
-      if (aliasedPrefix) {
-        const directAliasMatch = sites.find(
-          (site) => normalizePlatform(site.prefix) === aliasedPrefix,
-        );
-        if (directAliasMatch) return directAliasMatch;
-      }
+  const resolveAiSite = useCallback(
+    (data) => {
+      const normalizedSite = String(data.siteName || data.platform || "")
+        .toLowerCase()
+        .trim();
+      if (!normalizedSite) return null;
 
       return (
         sites.find((site) => {
-          const name = normalizePlatform(site.name);
-          const prefix = normalizePlatform(site.prefix);
-          return (
-            name === needle ||
-            prefix === needle ||
-            name.includes(needle) ||
-            needle.includes(name)
-          );
+          const name = String(site.name || "")
+            .toLowerCase()
+            .trim();
+          const prefix = String(site.prefix || "")
+            .toLowerCase()
+            .trim();
+          return name === normalizedSite || prefix === normalizedSite;
         }) || null
       );
     },
     [sites],
   );
 
-  const resolveAiSite = useCallback(
-    (data) => {
-      const candidates = [
-        data.platform,
-        data.siteName,
-        data.platform_detection?.platform_name,
-        data.route?.destination,
-      ].filter(Boolean);
-
-      for (const candidate of candidates) {
-        const matched = findSiteByPlatform(candidate);
-        if (matched) return matched;
-      }
-
-      return null;
-    },
-    [findSiteByPlatform],
-  );
-
   // ── Badge state ───────────────────────────────────────────
   const raw = value;
   const firstWord = raw.trim().split(" ")[0].toLowerCase();
   const matchSite = findExactPrefix(sites, firstWord);
-  const hasSpace = raw.includes(" ");
-  const isNatural = !matchSite && hasSpace && raw.trim().length > 0;
+  const isNatural = !matchSite && raw.trim().length > 0;
   const badgeLabel = raw.trim()
     ? matchSite
       ? matchSite.name
@@ -183,78 +118,69 @@ export function useCommand() {
 
       // 1. Exact prefix
       const exactSite = findExactPrefix(sites, first);
-      if (exactSite && rest) {
-        showToast(`Route: exact prefix -> ${exactSite.name}`);
+      if (exactSite) {
+        const targetUrl = buildSiteTargetUrl(exactSite, rest);
+        if (!targetUrl) {
+          showToast("This shortcut has no valid destination URL.", "error");
+          return;
+        }
+
+        const routeType =
+          rest && siteSupportsSearch(exactSite) ? "search" : "open";
+        showToast(`Route: exact prefix (${routeType}) -> ${exactSite.name}`);
         addHistory({
           raw: q,
-          query: rest,
+          query: rest || exactSite.baseUrl || exactSite.name,
           name: exactSite.name,
           icon: exactSite.icon,
           emoji: exactSite.emoji,
+          logoUrl: exactSite.logoUrl,
           ai: false,
         });
-        window.open(buildSearchUrl(exactSite, rest), "_self");
+        window.open(targetUrl, "_self");
         return;
       }
 
-      // 3. Natural language → AI router
-      if (q.includes(" ")) {
-        if (containsSensitiveInput(q)) {
+      // 3. Non-prefix input -> AI router (send raw query)
+      setAi(true);
+      try {
+        const data = await routeQuery(q);
+        const matchedSite = resolveAiSite(data);
+        const resolvedQuery = data.searchQuery || q;
+        const url = data.fullUrl;
+
+        if (url) {
+          showToast(`Route: AI -> ${data.siteName || "Web"}`);
+          addHistory({
+            raw: q,
+            query: resolvedQuery,
+            name: data.siteName || "Web",
+            icon: matchedSite?.icon,
+            emoji: matchedSite?.emoji,
+            logoUrl: matchedSite?.logoUrl,
+            ai: true,
+          });
+          window.open(url, "_self");
+          return;
+        }
+      } catch (err) {
+        console.error("[Navix AI Routing Error]", {
+          message: err instanceof Error ? err.message : String(err),
+          code: err?.code,
+          status: err?.status,
+          timestamp: new Date().toISOString(),
+        });
+
+        if (err?.status === 429 || err?.code === "RATE_LIMIT_EXCEEDED") {
           showToast(
-            "Sensitive input detected. Query not sent to AI router.",
+            "Rate limit reached. Please wait a minute before trying again.",
             "error",
           );
-          return;
+        } else {
+          showToast("AI routing failed, falling back to Google", "error");
         }
-
-        if (q.length > MAX_ROUTABLE_QUERY_LENGTH) {
-          showToast("Query is too long for AI routing.", "error");
-          return;
-        }
-
-        setAi(true);
-        try {
-          const data = await routeQuery(q);
-          const matchedSite = resolveAiSite(data);
-          // New API v1.0 provides pre-cleaned searchQuery
-          let resolvedQuery = data.searchQuery || q;
-
-          const url = data.fullUrl;
-
-          if (url) {
-            showToast(`Route: AI -> ${data.siteName || "Web"}`);
-            addHistory({
-              raw: q,
-              query: resolvedQuery,
-              name: data.siteName || "Web",
-              icon: matchedSite?.icon,
-              emoji: matchedSite?.emoji,
-              logoUrl: matchedSite?.logoUrl,
-              ai: true,
-            });
-            window.open(url, "_self");
-            return;
-          }
-        } catch (err) {
-          console.error("[Navix AI Routing Error]", {
-            message: err instanceof Error ? err.message : String(err),
-            code: err?.code,
-            status: err?.status,
-            timestamp: new Date().toISOString(),
-          });
-
-          // Handle rate limit error specifically
-          if (err?.status === 429 || err?.code === "RATE_LIMIT_EXCEEDED") {
-            showToast(
-              "Rate limit reached. Please wait a minute before trying again.",
-              "error",
-            );
-          } else {
-            showToast("AI routing failed, falling back to Google", "error");
-          }
-        } finally {
-          setAi(false);
-        }
+      } finally {
+        setAi(false);
       }
 
       // 4. Fallback — Google
