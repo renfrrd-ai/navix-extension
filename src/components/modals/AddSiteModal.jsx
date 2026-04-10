@@ -117,12 +117,23 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
           alias: cleanPrefix,
         });
 
-        if (shortcutData.template) {
-          resolvedSearchUrl = ensureSearchUrlMatchesBase(
-            baseUrl,
-            shortcutData.template,
-          );
+        const routeTemplate = ensureSearchUrlMatchesBase(
+          baseUrl,
+          shortcutData.template || "",
+        );
+
+        if (routeTemplate) {
+          resolvedSearchUrl = routeTemplate;
         }
+
+        const routeKind = shortcutData.routeType === "search" ? "search" : "open";
+        setStatus({
+          msg:
+            routeKind === "search"
+              ? "Navix route ready: search-enabled."
+              : "Navix route ready: direct/open navigation.",
+          type: "ok",
+        });
       } catch {
         setStatus({
           msg: "Navix API could not create a route template. This shortcut will open the site directly.",
@@ -139,8 +150,10 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
       prefix: cleanPrefix,
       emoji,
       logoUrl,
-      slugRules: shortcutData?.slug_rules || undefined,
+      slugRules: shortcutData?.slugRules || shortcutData?.slug_rules || undefined,
       capabilities: shortcutData?.capabilities || undefined,
+      routeType: shortcutData?.routeType || (resolvedSearchUrl ? "search" : "open"),
+      defaultUrl: shortcutData?.defaultUrl || baseUrl,
       bg: "#818cf8",
       ql: addToQL,
       builtin: false,
@@ -205,7 +218,7 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
                 </span>
               </>
             }
-            hint="Use {query} as the placeholder. Overrides AI detection."
+            hint="Use {query} as the placeholder. Overrides AI route detection. Leave empty for open-only routes."
           >
             <Input
               value={searchUrl}

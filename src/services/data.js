@@ -80,6 +80,13 @@ function sanitizeShortcut(item, index = 0) {
   const searchUrl = /\{query\}|%s/i.test(rawSearchUrl)
     ? rawSearchUrl.replace(/%s/gi, "{query}")
     : "";
+  const defaultUrl = sanitizeUrl(item.defaultUrl);
+  const routeType =
+    item.routeType === "search" || item.routeType === "open"
+      ? item.routeType
+      : searchUrl
+        ? "search"
+        : "open";
 
   if (!id || !prefix || !baseUrl) {
     return null;
@@ -92,6 +99,8 @@ function sanitizeShortcut(item, index = 0) {
     prefix,
     bg: sanitizeText(item.bg, 24),
     ...(searchUrl ? { searchUrl } : {}),
+    ...(defaultUrl ? { defaultUrl } : {}),
+    routeType,
     baseUrl,
     ql: Boolean(item.ql),
     builtin: Boolean(item.builtin),
@@ -108,6 +117,12 @@ function sanitizeShortcut(item, index = 0) {
       item.capabilities && typeof item.capabilities === "object"
         ? item.capabilities
         : undefined,
+    examples: Array.isArray(item.examples)
+      ? item.examples
+          .map((entry) => sanitizeText(entry, 140))
+          .filter(Boolean)
+          .slice(0, 8)
+      : undefined,
   };
 }
 

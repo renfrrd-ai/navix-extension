@@ -146,7 +146,11 @@ export async function createRouteDefinition(site) {
     baseUrl: site.baseUrl,
   });
 
-  const template = data.template || "";
+  const template =
+    data.template || data.searchUrl || data.search_url || data.queryTemplate || "";
+  const slugRules = data.slugRules || data.slug_rules || null;
+  const routeType =
+    data.routeType || data.route_type || (template ? "search" : "open");
 
   return {
     ...data,
@@ -154,8 +158,9 @@ export async function createRouteDefinition(site) {
     platform: data.siteName || site.name,
     baseUrl: data.baseUrl || site.baseUrl,
     template,
-    routeType: data.routeType || "open",
+    routeType,
     defaultUrl: data.defaultUrl || data.baseUrl || site.baseUrl,
+    slugRules,
     capabilities: data.capabilities || {},
     examples: Array.isArray(data.examples) ? data.examples : [],
     explanation: data.explanation || "",
