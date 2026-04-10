@@ -4,7 +4,7 @@ import Input from "@/components/ui/Input";
 import Toggle from "@/components/ui/Toggle";
 import { PrimaryButton } from "@/components/ui/Button";
 import useAppStore from "@/hooks/useAppStore";
-import { createShortcut } from "@/services/router";
+import { createRouteDefinition } from "@/services/router";
 import { ensureSearchUrlMatchesBase } from "@/utils/sites";
 
 export default function AddSiteModal({ open, onClose, editSite = null }) {
@@ -109,10 +109,10 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
     if (devMode && searchUrl.trim()) {
       resolvedSearchUrl = ensureSearchUrlMatchesBase(baseUrl, searchUrl.trim());
     } else {
-      setStatus({ msg: "Creating shortcut via Navix API…", type: "loading" });
+      setStatus({ msg: "Creating route via Navix API…", type: "loading" });
       try {
-        shortcutData = await createShortcut({
-          siteName: name.trim(),
+        shortcutData = await createRouteDefinition({
+          name: name.trim(),
           baseUrl,
           alias: cleanPrefix,
         });

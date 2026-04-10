@@ -90,9 +90,14 @@ async function navixRequest(path, body) {
 }
 
 function normalizeInterpretResponse(data, rawQuery) {
-  // Handle new API format (v1.0)
   const url = data.fullUrl || data.url || null;
-  const platform = data.siteName || data.platform || "Web";
+  const domain = data.domain || "";
+  const platform =
+    data.siteName ||
+    data.platform ||
+    (typeof domain === "string" && domain
+      ? domain.replace(/^www\./i, "").split(".")[0]
+      : "Web");
   const normalizedQuery =
     data.searchQuery || data.normalized_query || data.query || rawQuery;
 
@@ -102,45 +107,58 @@ function normalizeInterpretResponse(data, rawQuery) {
     fullUrl: url,
     platform,
     siteName: platform,
+    domain,
+    reasoning: data.reasoning || "",
+    title: data.title || "",
+    description: data.description || "",
+    relevanceScore: Number.isFinite(data.relevanceScore)
+      ? data.relevanceScore
+      : null,
     searchQuery: normalizedQuery,
     shortcut_used: Boolean(data.shortcut_used),
   };
 }
 
 /**
- * Calls the Navix interpret backend and normalizes the response for the app.
+ * Fast AI route to the best destination URL.
  */
 export async function routeQuery(query) {
-  const data = await navixRequest("/interpret", { query });
+  const data = await navixRequest("/route", { query });
 
   return normalizeInterpretResponse(data, query);
 }
 
 /**
- * Creates or updates a backend shortcut config and returns the normalized result.
+ * Deep research mode for finding the exact best resource URL.
  */
-export async function createShortcut(site) {
-  const data = await navixRequest("/create-shortcut", {
-    siteName: site.siteName,
+export async function researchQuery(query) {
+  const data = await navixRequest("/research", { query });
+
+  return normalizeInterpretResponse(data, query);
+}
+
+/**
+ * Analyze a platform and return route definition metadata.
+ */
+export async function createRouteDefinition(site) {
+  const data = await navixRequest("/create-route", {
+    name: site.name,
     baseUrl: site.baseUrl,
   });
 
-  const template =
-    data.routing?.template ||
-    data.template ||
-    data.searchUrl ||
-    data.shortcut?.template ||
-    null;
+  const template = data.template || "";
 
   return {
     ...data,
-    alias: data.shortcut?.alias || site.alias,
-    platform: data.siteName || site.siteName,
+    alias: data.prefix || site.alias || "",
+    platform: data.siteName || site.name,
     baseUrl: data.baseUrl || site.baseUrl,
     template,
-    space_encoding: data.space_encoding || "+",
-    slug_rules: data.slug_rules || data.slugRules || null,
-    capabilities: data.capabilities || null,
+    routeType: data.routeType || "open",
+    defaultUrl: data.defaultUrl || data.baseUrl || site.baseUrl,
+    capabilities: data.capabilities || {},
+    examples: Array.isArray(data.examples) ? data.examples : [],
+    explanation: data.explanation || "",
   };
 }
 

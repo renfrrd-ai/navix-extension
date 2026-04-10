@@ -1,8 +1,9 @@
 import { useState, useRef, useCallback } from "react";
-import { routeQuery } from "@/services/router";
+import { researchQuery, routeQuery } from "@/services/router";
 import {
   buildSiteTargetUrl,
   findExactPrefix,
+  getDomainParts,
   siteSupportsSearch,
 } from "@/utils/sites";
 import useAppStore from "./useAppStore";
@@ -20,7 +21,12 @@ export function useCommand() {
       const normalizedSite = String(data.siteName || data.platform || "")
         .toLowerCase()
         .trim();
-      if (!normalizedSite) return null;
+      const normalizedDomain = String(data.domain || "")
+        .toLowerCase()
+        .replace(/^www\./, "")
+        .trim();
+
+      if (!normalizedSite && !normalizedDomain) return null;
 
       return (
         sites.find((site) => {
@@ -30,7 +36,12 @@ export function useCommand() {
           const prefix = String(site.prefix || "")
             .toLowerCase()
             .trim();
-          return name === normalizedSite || prefix === normalizedSite;
+          const rootDomain = getDomainParts(site.baseUrl).root;
+          return (
+            (normalizedSite &&
+              (name === normalizedSite || prefix === normalizedSite)) ||
+            (normalizedDomain && rootDomain === normalizedDomain)
+          );
         }) || null
       );
     },
@@ -39,20 +50,24 @@ export function useCommand() {
 
   // ── Badge state ───────────────────────────────────────────
   const raw = value;
-  const firstWord = raw.trim().split(" ")[0].toLowerCase();
+  const trimmed = raw.trim();
+  const isDeepResearchInput = trimmed.startsWith("@");
+  const firstWord = trimmed.split(" ")[0].toLowerCase();
   const matchSite = findExactPrefix(sites, firstWord);
-  const isNatural = !matchSite && raw.trim().length > 0;
-  const badgeLabel = raw.trim()
-    ? matchSite
-      ? matchSite.name
-      : "Google"
+  const isNatural = !isDeepResearchInput && !matchSite && trimmed.length > 0;
+  const badgeLabel = trimmed
+    ? isDeepResearchInput
+      ? "Research"
+      : matchSite
+        ? matchSite.name
+        : "Google"
     : null;
 
   // ── Autocomplete suggestions ──────────────────────────────
   const updateSuggestions = useCallback(
     (input) => {
       const q = input.trim();
-      if (!q || q.includes(" ") || q.length < 1) {
+      if (!q || q.includes(" ") || q.startsWith("@") || q.length < 1) {
         setSugg([]);
         return;
       }
@@ -111,6 +126,76 @@ export function useCommand() {
     async (raw) => {
       const q = raw.trim();
       if (!q || aiThinking) return;
+
+      let fallbackQuery = q;
+
+      if (q.startsWith("@")) {
+        const researchInput = q.slice(1).trim();
+        if (!researchInput) {
+          showToast("Add a query after @ to run deep research.", "error");
+          return;
+        }
+        fallbackQuery = researchInput;
+
+        setAi(true);
+        try {
+          const data = await researchQuery(researchInput);
+          const matchedSite = resolveAiSite(data);
+          const url = data.fullUrl;
+
+          if (url) {
+            showToast(
+              `Route: Research -> ${data.domain || data.siteName || "Web"}`,
+            );
+            addHistory({
+              raw: q,
+              query: data.searchQuery || researchInput,
+              name: data.siteName || data.domain || "Web",
+              icon: matchedSite?.icon,
+              emoji: matchedSite?.emoji,
+              logoUrl: matchedSite?.logoUrl,
+              ai: true,
+            });
+            window.open(url, "_self");
+            return;
+          }
+        } catch (err) {
+          console.error("[Navix Research Routing Error]", {
+            message: err instanceof Error ? err.message : String(err),
+            code: err?.code,
+            status: err?.status,
+            timestamp: new Date().toISOString(),
+          });
+
+          if (err?.status === 429 || err?.code === "RATE_LIMIT_EXCEEDED") {
+            showToast(
+              "Rate limit reached. Please wait a minute before trying again.",
+              "error",
+            );
+          } else {
+            showToast(
+              "Research routing failed, falling back to Google",
+              "error",
+            );
+          }
+        } finally {
+          setAi(false);
+        }
+
+        showToast("Route: Google fallback", "error");
+        addHistory({
+          raw: q,
+          query: fallbackQuery,
+          name: "Google",
+          icon: "google",
+          ai: false,
+        });
+        window.open(
+          `https://www.google.com/search?q=${encodeURIComponent(fallbackQuery)}`,
+          "_self",
+        );
+        return;
+      }
 
       const parts = q.split(" ");
       const first = parts[0].toLowerCase();
@@ -187,13 +272,13 @@ export function useCommand() {
       showToast("Route: Google fallback", "error");
       addHistory({
         raw: q,
-        query: q,
+        query: fallbackQuery,
         name: "Google",
         icon: "google",
         ai: false,
       });
       window.open(
-        `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+        `https://www.google.com/search?q=${encodeURIComponent(fallbackQuery)}`,
         "_self",
       );
     },
@@ -208,6 +293,7 @@ export function useCommand() {
     setSugg,
     badgeLabel,
     isNatural,
+    isDeepResearchInput,
     inputRef,
     handleChange,
     handleKeyDown,

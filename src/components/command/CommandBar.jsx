@@ -47,6 +47,7 @@ export default function CommandBar({
   suggestions,
   badgeLabel,
   isNatural,
+  isDeepResearchInput,
   inputRef,
   handleChange,
   handleKeyDown,
@@ -67,7 +68,7 @@ export default function CommandBar({
           value={value}
           onChange={handleChange}
           onKeyDown={(e) => handleKeyDown(e, history)}
-          placeholder="Type a command like  yt lo-fi  or ask anything…"
+          placeholder="Type yt lo-fi, ask anything, or start with @ for deep research…"
           autoComplete="off"
           spellCheck={false}
           autoFocus
@@ -85,12 +86,17 @@ export default function CommandBar({
             </span>
           </div>
         )}
+        {!aiThinking && isDeepResearchInput && value.trim().length > 1 && (
+          <div className="mr-[0.4rem] flex shrink-0 items-center gap-[0.3rem] rounded-[7px] border border-[rgba(251,191,36,0.34)] bg-[rgba(251,191,36,0.14)] px-[0.6rem] py-1 text-[0.68rem] font-semibold tracking-[0.06em] text-[#fbbf24]">
+            <StarIcon /> Research
+          </div>
+        )}
         {!aiThinking && isNatural && value.trim() && (
           <div className="mr-[0.4rem] flex shrink-0 items-center gap-[0.3rem] rounded-[7px] border border-[rgba(192,132,252,0.22)] bg-accent-glow-2 px-[0.6rem] py-1 text-[0.68rem] font-semibold tracking-[0.06em] text-accent-2">
             <StarIcon /> AI
           </div>
         )}
-        {!aiThinking && !isNatural && badgeLabel && (
+        {!aiThinking && !isNatural && !isDeepResearchInput && badgeLabel && (
           <div className="bg-accent-gradient mr-[0.4rem] shrink-0 whitespace-nowrap rounded-[7px] px-[0.65rem] py-[0.28rem] text-[0.68rem] font-semibold tracking-[0.07em] text-white">
             {badgeLabel}
           </div>
