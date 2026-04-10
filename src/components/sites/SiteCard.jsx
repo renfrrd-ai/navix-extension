@@ -43,7 +43,7 @@ export default function SiteCard({ site, onEdit, onCmdFill }) {
           }
         }}
         title={`${site.name}${site.prefix ? ` (${site.prefix})` : ""}`}
-        className="group font-app relative flex cursor-pointer flex-col items-center gap-[0.6rem] rounded-[14px] border-[1.5px] border-app bg-app-2 px-2 py-[1.15rem] pb-[0.95rem] transition-[border-color,background,transform] duration-200 hover:-translate-y-[3px] hover:border-[var(--accent)] hover:bg-[var(--accent-glow)]"
+        className="group font-app relative flex cursor-pointer flex-col items-center gap-[0.6rem] rounded-[14px] border-[1.5px] border-app bg-app-2 px-2 py-[1.15rem] pb-[0.95rem] transition-[border-color,background,transform] duration-200 hover:-translate-y-0.75 hover:border-(--accent) hover:bg-(--accent-glow)"
       >
         <div
           className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl"
@@ -109,8 +109,8 @@ export default function SiteCard({ site, onEdit, onCmdFill }) {
                 onClick={item.action}
                 className={`block w-full cursor-pointer border-0 border-b border-app bg-transparent px-4 py-[0.8rem] text-left text-[0.84rem] transition-colors duration-150 ${
                   item.danger
-                    ? "text-[var(--red)] hover:bg-[rgba(248,113,113,0.1)] hover:text-[var(--red)]"
-                    : "text-app-2 hover:bg-[var(--accent-glow)] hover:text-app"
+                    ? "text-(--red) hover:bg-[rgba(248,113,113,0.1)] hover:text-(--red)"
+                    : "text-app-2 hover:bg-(--accent-glow) hover:text-app"
                 }`}
               >
                 {item.label}

@@ -121,7 +121,7 @@ export default function SettingsPanel({ open, onClose }) {
                 />
                 <button
                   onClick={handleSaveName}
-                  className="shrink-0 cursor-pointer rounded-[8px] bg-accent-gradient px-3 py-2 text-[0.74rem] font-semibold text-white transition-opacity duration-200 hover:opacity-90"
+                  className="shrink-0 cursor-pointer rounded-lg bg-accent-gradient px-3 py-2 text-[0.74rem] font-semibold text-white transition-opacity duration-200 hover:opacity-90"
                 >
                   Save
                 </button>
@@ -129,7 +129,7 @@ export default function SettingsPanel({ open, onClose }) {
             ) : (
               <button
                 onClick={() => setEditingName(true)}
-                className="cursor-pointer rounded-[8px] border-0 bg-transparent px-0 py-0 text-[0.88rem] font-semibold text-app transition-colors duration-200 hover:text-[var(--accent)]"
+                className="cursor-pointer rounded-lg border-0 bg-transparent px-0 py-0 text-[0.88rem] font-semibold text-app transition-colors duration-200 hover:text-(--accent)"
               >
                 {name}
               </button>
@@ -163,17 +163,13 @@ export default function SettingsPanel({ open, onClose }) {
               key={t.id}
               onClick={() => setTheme(t.id)}
               className={`cursor-pointer overflow-hidden rounded-[9px] border-2 transition-[border-color,transform] duration-200 ${
-                theme === t.id
-                  ? "scale-[1.04] border-[var(--accent)]"
-                  : "border-app"
+                theme === t.id ? "scale-[1.04] border-(--accent)" : "border-app"
               }`}
             >
               <div
                 className={`flex h-11 items-center justify-center gap-0.75 ${t.swatchBgClass}`}
               >
-                <div
-                  className={`size-2.25 rounded-full ${t.swatchAClass}`}
-                />
+                <div className={`size-2.25 rounded-full ${t.swatchAClass}`} />
                 <div
                   className={`size-2.25 rounded-full opacity-60 ${t.swatchBClass}`}
                 />
@@ -194,7 +190,7 @@ export default function SettingsPanel({ open, onClose }) {
               onClick={() => setFont(f.id)}
               className={`flex cursor-pointer items-center justify-between rounded-[9px] border-[1.5px] px-4 py-[0.7rem] transition-colors duration-200 ${
                 font === f.id
-                  ? "border-[var(--accent)] bg-[var(--accent-glow)]"
+                  ? "border-(--accent) bg-(--accent-glow)"
                   : "border-app bg-app-3"
               } ${f.id}`}
             >

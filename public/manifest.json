@@ -19,10 +19,7 @@
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
-  "permissions": [
-    "storage",
-    "identity"
-  ],
+  "permissions": ["storage", "identity"],
   "host_permissions": [
     "https://us-central1-navix-4771e.cloudfunctions.net/*",
     "https://*.googleapis.com/*",

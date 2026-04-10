@@ -36,7 +36,7 @@ const StarIcon = () => (
 );
 const LoaderDot = ({ delay = "0ms" }) => (
   <span
-    className="size-1.5 rounded-full bg-[var(--accent)] animate-[pulse_1.1s_ease-in-out_infinite]"
+    className="size-1.5 rounded-full bg-(--accent) animate-[pulse_1.1s_ease-in-out_infinite]"
     style={{ animationDelay: delay }}
   />
 );
@@ -57,7 +57,7 @@ export default function CommandBar({
 
   return (
     <div className="relative w-full max-w-190">
-      <div className="flex items-center overflow-hidden rounded-[18px] border-[1.5px] border-app-2 bg-app-2 transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--accent)] focus-within:ring-app">
+      <div className="flex items-center overflow-hidden rounded-[18px] border-[1.5px] border-app-2 bg-app-2 transition-[border-color,box-shadow] duration-200 focus-within:border-(--accent) focus-within:ring-app">
         <div className="flex shrink-0 items-center px-[1.3rem] pr-[1.1rem] text-app-3">
           <SearchIcon />
         </div>
@@ -71,7 +71,7 @@ export default function CommandBar({
           autoComplete="off"
           spellCheck={false}
           autoFocus
-          className="font-app flex-1 border-0 bg-transparent px-2 py-[1.2rem] text-[1.05rem] text-app caret-[var(--accent)] outline-none"
+          className="font-app flex-1 border-0 bg-transparent px-2 py-[1.2rem] text-[1.05rem] text-app caret-(--accent) outline-none"
         />
 
         {aiThinking && (
@@ -110,7 +110,7 @@ export default function CommandBar({
             <div
               key={s.id}
               onClick={() => pickSuggestion(s.prefix)}
-              className="flex cursor-pointer items-center gap-[0.85rem] border-b border-app px-[1.2rem] py-[0.85rem] text-[0.88rem] text-app-2 transition-colors duration-150 hover:bg-[var(--accent-glow)] hover:text-app"
+              className="flex cursor-pointer items-center gap-[0.85rem] border-b border-app px-[1.2rem] py-[0.85rem] text-[0.88rem] text-app-2 transition-colors duration-150 hover:bg-(--accent-glow) hover:text-app"
             >
               <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-[7px] bg-app-3">
                 <SiteIcon site={s} size={22} />
