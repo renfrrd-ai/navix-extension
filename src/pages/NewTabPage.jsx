@@ -14,6 +14,8 @@ import { useClock } from "@/hooks/useClock";
 import useAppStore from "@/hooks/useAppStore";
 import { useCommand } from "@/hooks/useCommand";
 
+const BACKGROUND_VIDEO_URL =
+  "https://video-previews.elements.envatousercontent.com/895fd898-4df1-4d23-abcf-1bb088cdbab3/watermarked_preview/watermarked_preview.mp4";
 export default function NewTabPage() {
   const { user, userData, theme, font, showToast } = useAppStore();
   const { timeStr, dateStr, greeting } = useClock();
@@ -125,6 +127,20 @@ export default function NewTabPage() {
 
   return (
     <div className="relative z-2 flex min-h-screen flex-col items-center px-8 pt-10 pb-28">
+      <div className="video-bg" aria-hidden="true">
+        <video
+          className="video-bg-media"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+        >
+          <source src={BACKGROUND_VIDEO_URL} type="video/mp4" />
+        </video>
+        <div className="video-bg-overlay" />
+      </div>
+
       <div className="noise-layer" />
       <div className="orb orb1" />
       <div className="orb orb2" />

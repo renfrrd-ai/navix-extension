@@ -302,8 +302,66 @@
     opacity: 0.022;
   }
 
+  .video-bg {
+    @apply pointer-events-none fixed inset-0 -z-10 overflow-hidden;
+    background:
+      radial-gradient(circle at 15% 10%, var(--accent-glow), transparent 45%),
+      radial-gradient(circle at 85% 85%, var(--accent-glow2), transparent 48%),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--bg) 82%, black 18%),
+        var(--bg)
+      );
+  }
+
+  .video-bg-media {
+    @apply absolute inset-0 h-full w-full;
+    object-fit: cover;
+    filter: saturate(1.08) contrast(1.04) brightness(0.72);
+    transform: scale(1.04);
+  }
+
+  .video-bg-overlay {
+    @apply absolute inset-0;
+    background:
+      radial-gradient(
+        circle at 50% 50%,
+        transparent 0%,
+        color-mix(in srgb, var(--bg) 52%, black 48%) 82%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--bg) 42%, transparent),
+        color-mix(in srgb, var(--bg) 75%, black 25%)
+      );
+  }
+
   .t-light .noise-layer {
     opacity: 0.012;
+  }
+
+  .t-light .video-bg-media {
+    filter: saturate(1.03) contrast(1.02) brightness(0.92);
+  }
+
+  .t-light .video-bg-overlay {
+    background:
+      radial-gradient(
+        circle at 50% 50%,
+        transparent 0%,
+        color-mix(in srgb, var(--bg) 42%, white 58%) 84%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--bg) 40%, transparent),
+        color-mix(in srgb, var(--bg) 58%, white 42%)
+      );
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video-bg-media {
+      display: none;
+    }
   }
 
   .orb {
@@ -329,12 +387,20 @@
   }
 
   .t-light .orb1 {
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.14), rgba(99, 102, 241, 0.04));
+    background: radial-gradient(
+      circle,
+      rgba(99, 102, 241, 0.14),
+      rgba(99, 102, 241, 0.04)
+    );
     filter: blur(120px);
   }
 
   .t-light .orb2 {
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.12), rgba(139, 92, 246, 0.03));
+    background: radial-gradient(
+      circle,
+      rgba(139, 92, 246, 0.12),
+      rgba(139, 92, 246, 0.03)
+    );
     filter: blur(120px);
   }
 
