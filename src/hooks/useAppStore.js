@@ -146,8 +146,6 @@ const useAppStore = create((set, get) => ({
   // ── Preferences ───────────────────────────────────────────
   theme: "t-midnight",
   font: "f-inter",
-  uiScale: "m",
-  textScale: "m",
   backgroundFx: "bgx-ocean",
   timeFormat: "digital",
   devMode: false,
@@ -160,16 +158,6 @@ const useAppStore = create((set, get) => ({
   setFont: (font) => {
     set({ font });
     updateLocalData({ font });
-  },
-
-  setUiScale: (uiScale) => {
-    set({ uiScale });
-    updateLocalData({ uiScale });
-  },
-
-  setTextScale: (textScale) => {
-    set({ textScale });
-    updateLocalData({ textScale });
   },
 
   setBackgroundFx: (backgroundFx) => {
@@ -205,8 +193,6 @@ const useAppStore = create((set, get) => ({
       history: [],
       theme: "t-midnight",
       font: "f-inter",
-      uiScale: "m",
-      textScale: "m",
       backgroundFx: "bgx-ocean",
       timeFormat: "digital",
       devMode: false,

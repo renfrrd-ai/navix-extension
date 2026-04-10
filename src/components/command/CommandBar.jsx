@@ -34,11 +34,12 @@ const StarIcon = () => (
     <path d="M12 2L9.09 9.09 2 12l7.09 2.91L12 22l2.91-7.09L22 12l-7.09-2.91L12 2z" />
   </svg>
 );
-const LoaderDot = ({ delay = "0ms" }) => (
-  <span
-    className="size-1.5 rounded-full bg-(--accent) animate-[pulse_1.1s_ease-in-out_infinite]"
-    style={{ animationDelay: delay }}
-  />
+const RoundLoader = () => (
+  <span className="relative inline-flex size-5 items-center justify-center">
+    <span className="absolute inset-0 rounded-full border-[1.5px] border-app-2/70" />
+    <span className="absolute inset-[1px] rounded-full border-[1.7px] border-transparent border-t-(--accent) border-r-(--accent) animate-spin" />
+    <span className="relative size-1.5 rounded-full bg-(--accent) animate-[pulse_900ms_ease-in-out_infinite]" />
+  </span>
 );
 
 export default function CommandBar({
@@ -75,14 +76,12 @@ export default function CommandBar({
         />
 
         {aiThinking && (
-          <div className="mr-[0.45rem] flex shrink-0 items-center gap-[0.45rem] rounded-[9px] border border-[rgba(129,140,248,0.22)] bg-accent-glow px-[0.72rem] py-[0.42rem] text-[0.68rem] font-semibold tracking-[0.06em] text-accent">
-            <StarIcon />
-            <span className="whitespace-nowrap">AI routing</span>
-            <span className="flex items-center gap-[0.22rem]">
-              <LoaderDot />
-              <LoaderDot delay="140ms" />
-              <LoaderDot delay="280ms" />
-            </span>
+          <div
+            className="mr-[0.45rem] flex size-8 shrink-0 items-center justify-center rounded-full border border-app-2 bg-app-3/85"
+            role="status"
+            aria-label="Routing in progress"
+          >
+            <RoundLoader />
           </div>
         )}
         {!aiThinking && isNatural && value.trim() && (

@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Navix Side Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f3f6fb;
+        --panel: #ffffff;
+        --panel-2: #f4f8ff;
+        --border: rgba(19, 48, 88, 0.14);
+        --text: #16263d;
+        --muted: #5f738f;
+        --accent: #2f7de1;
+        --accent-2: #22b6a2;
+        --danger: #d44d62;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 8% 0%, rgba(34, 182, 162, 0.15), transparent 42%),
+          radial-gradient(circle at 100% 0%, rgba(47, 125, 225, 0.18), transparent 48%),
+          linear-gradient(170deg, #eef3fa 0%, #f6f8fc 48%, #edf3fb 100%);
+        color: var(--text);
+      }
+
+      .shell {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        height: 100%;
+        gap: 10px;
+        padding: 12px;
+      }
+
+      .header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: linear-gradient(130deg, rgba(255, 255, 255, 0.98), rgba(236, 245, 255, 0.98));
+        box-shadow: 0 8px 20px rgba(26, 56, 98, 0.08);
+        padding: 12px;
+      }
+
+      .eyebrow {
+        margin: 0;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .title {
+        margin: 2px 0 0;
+        font-size: 16px;
+        line-height: 1.2;
+      }
+
+      .today-pill {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text);
+        border: 1px solid rgba(19, 48, 88, 0.16);
+        border-radius: 999px;
+        padding: 5px 10px;
+        background: rgba(255, 255, 255, 0.92);
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .tab {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 8px 10px;
+        transition: all 0.18s ease;
+      }
+
+      .tab:hover {
+        border-color: rgba(47, 125, 225, 0.55);
+        color: var(--text);
+      }
+
+      .tab.is-active {
+        color: #ffffff;
+        border-color: transparent;
+        background: linear-gradient(130deg, var(--accent), var(--accent-2));
+      }
+
+      .panes {
+        min-height: 0;
+      }
+
+      .panel {
+        height: 100%;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 250, 255, 0.98));
+        box-shadow: 0 10px 24px rgba(18, 41, 74, 0.08);
+        padding: 10px;
+        overflow: auto;
+      }
+
+      .panel[hidden] {
+        display: none !important;
+      }
+
+      .panel-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 9px;
+      }
+
+      .panel-title {
+        margin: 0;
+        font-size: 13px;
+      }
+
+      .chip-btn {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel-2);
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 6px 9px;
+      }
+
+      .chip-btn:hover {
+        color: var(--text);
+        border-color: rgba(46, 196, 182, 0.7);
+      }
+
+      .chip-btn.danger:hover {
+        border-color: rgba(255, 107, 107, 0.7);
+        color: #ffd0d0;
+      }
+
+      .messages {
+        min-height: 220px;
+        max-height: calc(100% - 98px);
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel-2);
+        padding: 9px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .message {
+        max-width: 94%;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        padding: 8px 10px;
+        font-size: 12px;
+        line-height: 1.4;
+        white-space: pre-wrap;
+      }
+
+      .message.user {
+        align-self: flex-end;
+        background: linear-gradient(130deg, rgba(47, 125, 225, 0.18), rgba(34, 182, 162, 0.16));
+      }
+
+      .message.assistant {
+        align-self: flex-start;
+        background: #ffffff;
+      }
+
+      .inline-form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+      }
+
+      .input,
+      .select,
+      .textarea {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #ffffff;
+        color: var(--text);
+        font: inherit;
+        font-size: 12px;
+        padding: 9px 10px;
+        outline: none;
+      }
+
+      .textarea {
+        min-height: 88px;
+        resize: vertical;
+      }
+
+      .input:focus,
+      .select:focus,
+      .textarea:focus {
+        border-color: rgba(47, 125, 225, 0.8);
+      }
+
+      .solid-btn {
+        border: 0;
+        border-radius: 10px;
+        color: #ffffff;
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        background: linear-gradient(130deg, var(--accent), var(--accent-2));
+        padding: 0 14px;
+      }
+
+      .meta-line {
+        margin: 8px 0 0;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .task-list {
+        list-style: none;
+        margin: 10px 0 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+      }
+
+      .task-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--panel-2);
+        padding: 8px 10px;
+      }
+
+      .task-main {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .task-title {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .task-item.is-done .task-title {
+        color: #889ab0;
+        text-decoration: line-through;
+      }
+
+      .task-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .daily-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .span-2 {
+        grid-column: 1 / -1;
+      }
+
+      .field {
+        display: grid;
+        gap: 5px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .habit-grid {
+        margin-top: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .habit-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--panel-2);
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+
+      .daily-footer {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .status {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .status.error {
+        color: #bb3348;
+      }
+
+      .app-grid {
+        margin-top: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .app-card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--panel-2);
+        padding: 9px;
+      }
+
+      .app-card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .app-label {
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .app-alias {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .app-desc {
+        margin: 6px 0;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .app-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .history-block {
+        margin-top: 10px;
+      }
+
+      .history-title {
+        margin: 0 0 6px;
+        font-size: 12px;
+      }
+
+      .history-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 6px;
+      }
+
+      .history-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel-2);
+        padding: 6px 8px;
+      }
+
+      .history-command {
+        font-size: 11px;
+        color: var(--text);
+      }
+
+      .history-time {
+        font-size: 10px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <div>
+          <p class="eyebrow">Navix Side Panel</p>
+          <h1 class="title">Assistant Workspace</h1>
+        </div>
+        <div id="todayLabel" class="today-pill"></div>
+      </header>
+
+      <nav class="tabs" aria-label="Panel sections">
+        <button class="tab is-active" data-tab="assistant" type="button">Assistant</button>
+        <button class="tab" data-tab="tasks" type="button">Tasks</button>
+        <button class="tab" data-tab="daily" type="button">Daily</button>
+        <button class="tab" data-tab="apps" type="button">Apps</button>
+      </nav>
+
+      <section class="panes">
+        <section class="panel" data-panel="assistant">
+          <div class="panel-toolbar">
+            <h2 class="panel-title">Assistant</h2>
+            <button id="clearChatBtn" class="chip-btn" type="button">Clear Chat</button>
+          </div>
+          <section id="messages" class="messages" aria-live="polite"></section>
+          <form id="assistantForm" class="inline-form" style="margin-top: 8px">
+            <input
+              id="assistantInput"
+              class="input"
+              type="text"
+              placeholder="Ask, plan, or think out loud..."
+              autocomplete="off"
+            />
+            <button class="solid-btn" type="submit">Send</button>
+          </form>
+          <p class="meta-line">Tip: this assistant state is persisted in chrome.storage.local.</p>
+        </section>
+
+        <section class="panel" data-panel="tasks" hidden>
+          <div class="panel-toolbar">
+            <h2 class="panel-title">Tasks</h2>
+            <button id="clearDoneBtn" class="chip-btn" type="button">Clear Done</button>
+          </div>
+          <form id="taskForm" class="inline-form">
+            <input
+              id="taskInput"
+              class="input"
+              type="text"
+              placeholder="Add a task"
+              autocomplete="off"
+            />
+            <button class="solid-btn" type="submit">Add</button>
+          </form>
+          <p id="taskStats" class="meta-line"></p>
+          <ul id="taskList" class="task-list"></ul>
+        </section>
+
+        <section class="panel" data-panel="daily" hidden>
+          <div class="panel-toolbar">
+            <h2 class="panel-title">Daily Tracker</h2>
+            <span id="dailyStreak" class="meta-line"></span>
+          </div>
+          <div class="daily-grid">
+            <label class="field">
+              Mood
+              <select id="dailyMood" class="select">
+                <option value="">Select mood</option>
+                <option value="locked-in">Locked In</option>
+                <option value="steady">Steady</option>
+                <option value="foggy">Foggy</option>
+                <option value="off">Off Day</option>
+              </select>
+            </label>
+            <label class="field">
+              Focus Minutes
+              <input id="dailyFocus" class="input" type="number" min="0" max="1440" />
+            </label>
+            <label class="field span-2">
+              Notes
+              <textarea id="dailyNotes" class="textarea" placeholder="What moved the day forward?"></textarea>
+            </label>
+          </div>
+          <div id="dailyHabits" class="habit-grid"></div>
+          <div class="daily-footer">
+            <span id="dailyStatus" class="status"></span>
+            <button id="dailySaveBtn" class="chip-btn" type="button">Save Now</button>
+          </div>
+        </section>
+
+        <section class="panel" data-panel="apps" hidden>
+          <div class="panel-toolbar">
+            <h2 class="panel-title">App Connectors</h2>
+            <span class="meta-line">Example: wa john</span>
+          </div>
+          <form id="appCmdForm" class="inline-form">
+            <input
+              id="appCmdInput"
+              class="input"
+              type="text"
+              placeholder="Run app command (for example wa john)"
+              autocomplete="off"
+            />
+            <button class="solid-btn" type="submit">Run</button>
+          </form>
+          <p id="appStatus" class="status" style="margin-top: 8px"></p>
+
+          <div id="appConnectorGrid" class="app-grid"></div>
+
+          <div class="history-block">
+            <h3 class="history-title">Recent App Commands</h3>
+            <ul id="appHistory" class="history-list"></ul>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="sidepanel.js"></script>
+  </body>
+</html>

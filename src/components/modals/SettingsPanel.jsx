@@ -12,10 +12,8 @@ import {
 } from "@/services/data";
 import Input from "@/components/ui/Input";
 
-const SCALE_OPTIONS = ["xs", "s", "m", "l", "xl"];
 const BACKGROUND_OPTIONS = [
-  { id: "bgx-ocean", label: "Ocean Motion" },
-  { id: "bgx-calm", label: "Calm Motion" },
+  { id: "bgx-ocean", label: "Flowing Motion" },
   { id: "bgx-static", label: "Still Gradient" },
 ];
 
@@ -25,14 +23,10 @@ export default function SettingsPanel({ open, onClose }) {
     userData,
     theme,
     font,
-    uiScale,
-    textScale,
     backgroundFx,
     devMode,
     setTheme,
     setFont,
-    setUiScale,
-    setTextScale,
     setBackgroundFx,
     setDevMode,
     setUserData,
@@ -218,48 +212,6 @@ export default function SettingsPanel({ open, onClose }) {
 
       <SettingGroup label="Display">
         <div className="flex flex-col gap-4">
-          <div>
-            <div className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-app-3">
-              Overall size
-            </div>
-            <div className="grid grid-cols-5 gap-1.5">
-              {SCALE_OPTIONS.map((option) => (
-                <button
-                  key={`ui-${option}`}
-                  onClick={() => setUiScale(option)}
-                  className={`cursor-pointer rounded-[8px] border px-2 py-[0.42rem] text-[0.7rem] font-semibold tracking-[0.06em] transition-colors duration-200 ${
-                    uiScale === option
-                      ? "border-(--accent) bg-(--accent-glow) text-app"
-                      : "border-app bg-app-3 text-app-3 hover:border-app-2 hover:text-app-2"
-                  }`}
-                >
-                  {option.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-app-3">
-              Text size
-            </div>
-            <div className="grid grid-cols-5 gap-1.5">
-              {SCALE_OPTIONS.map((option) => (
-                <button
-                  key={`text-${option}`}
-                  onClick={() => setTextScale(option)}
-                  className={`cursor-pointer rounded-[8px] border px-2 py-[0.42rem] text-[0.7rem] font-semibold tracking-[0.06em] transition-colors duration-200 ${
-                    textScale === option
-                      ? "border-(--accent) bg-(--accent-glow) text-app"
-                      : "border-app bg-app-3 text-app-3 hover:border-app-2 hover:text-app-2"
-                  }`}
-                >
-                  {option.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div>
             <div className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-app-3">
               Background animation

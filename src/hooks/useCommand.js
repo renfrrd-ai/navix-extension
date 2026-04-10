@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { routeQuery } from "@/services/router";
 import {
   buildSiteTargetUrl,
+  findMentionedSite,
   findExactPrefix,
   getDomainParts,
   siteSupportsSearch,
@@ -50,15 +51,39 @@ export function useCommand() {
 
   const getErrorMessage = useCallback((err) => {
     if (err instanceof Error && typeof err.message === "string") {
-      return err.message;
+      const message = err.message.trim();
+      if (message) return message;
     }
 
     if (typeof err?.message === "string") {
-      return err.message;
+      const message = err.message.trim();
+      if (message) return message;
+    }
+
+    if (err?.message && typeof err.message === "object") {
+      try {
+        const serialized = JSON.stringify(err.message);
+        if (serialized && serialized !== "{}") return serialized;
+      } catch {
+        // Ignore serialization failures.
+      }
+    }
+
+    if (typeof err?.error === "string" && err.error.trim()) {
+      return err.error.trim();
     }
 
     if (typeof err === "string") {
       return err;
+    }
+
+    if (err && typeof err === "object") {
+      try {
+        const serialized = JSON.stringify(err);
+        if (serialized && serialized !== "{}") return serialized;
+      } catch {
+        // Ignore serialization failures.
+      }
     }
 
     try {
@@ -84,12 +109,15 @@ export function useCommand() {
         setSugg([]);
         return;
       }
-      const matches = sites.filter(
-        (s) =>
-          s.prefix &&
-          s.prefix.startsWith(q.toLowerCase()) &&
-          s.prefix !== q.toLowerCase(),
-      );
+      const queryPrefix = q.toLowerCase();
+      const matches = sites.filter((s) => {
+        const sitePrefix = String(s?.prefix || "").toLowerCase();
+        return (
+          sitePrefix &&
+          sitePrefix.startsWith(queryPrefix) &&
+          sitePrefix !== queryPrefix
+        );
+      });
       setSugg(matches.slice(0, 5));
     },
     [sites],
@@ -146,31 +174,6 @@ export function useCommand() {
       const first = parts[0].toLowerCase();
       const rest = parts.slice(1).join(" ").trim();
 
-      // 0. App aliases
-      if (first === "wa") {
-        if (!rest) {
-          showToast("Use wa <name or number>", "error");
-          return;
-        }
-
-        const digits = rest.replace(/\D/g, "");
-        const url =
-          digits.length >= 8
-            ? `https://wa.me/${digits}`
-            : `https://web.whatsapp.com/?navix_search=${encodeURIComponent(rest)}`;
-
-        showToast("Route: app alias -> WhatsApp");
-        addHistory({
-          raw: q,
-          query: rest,
-          name: "WhatsApp",
-          icon: "message-circle",
-          ai: false,
-        });
-        window.open(url, "_self");
-        return;
-      }
-
       // 1. Exact prefix
       const exactSite = findExactPrefix(sites, first);
       if (exactSite) {
@@ -197,6 +200,7 @@ export function useCommand() {
       }
 
       // 3. Non-prefix input -> AI router (send raw query)
+      let aiError = null;
       setAi(true);
       try {
         const data = await routeQuery(q);
@@ -219,15 +223,53 @@ export function useCommand() {
           return;
         }
       } catch (err) {
+        aiError = err;
         const errorMessage = getErrorMessage(err);
-        console.error("[Navix AI Routing Error]", {
+        console.error("[Navix AI Routing Error]", errorMessage, {
           message: errorMessage,
           code: err?.code,
           status: err?.status,
+          rawError: err,
           timestamp: new Date().toISOString(),
         });
+      } finally {
+        setAi(false);
+      }
 
-        if (err?.status === 429 || err?.code === "RATE_LIMIT_EXCEEDED") {
+      const mentionedSite = findMentionedSite(sites, q);
+      if (mentionedSite) {
+        const openIntent = /^(open|go|goto|visit|launch)\b/i.test(q);
+        const localTargetUrl = openIntent
+          ? mentionedSite.baseUrl
+          : buildSiteTargetUrl(mentionedSite, q);
+
+        if (localTargetUrl) {
+          showToast(
+            aiError
+              ? `AI unavailable, used local route -> ${mentionedSite.name}`
+              : `Route: local match -> ${mentionedSite.name}`,
+            aiError ? "error" : "info",
+          );
+          addHistory({
+            raw: q,
+            query: q,
+            name: mentionedSite.name,
+            icon: mentionedSite.icon,
+            emoji: mentionedSite.emoji,
+            logoUrl: mentionedSite.logoUrl,
+            ai: false,
+          });
+          window.open(localTargetUrl, "_self");
+          return;
+        }
+      }
+
+      if (aiError) {
+        const errorMessage = getErrorMessage(aiError);
+        if (
+          aiError?.status === 429 ||
+          aiError?.code === "RATE_LIMIT_EXCEEDED"
+        ) {
           showToast(
             "Rate limit reached. Please wait a minute before trying again.",
             "error",
@@ -235,8 +277,6 @@ export function useCommand() {
         } else {
           showToast(`AI routing failed: ${errorMessage}`, "error");
         }
-      } finally {
-        setAi(false);
       }
 
       // 4. Fallback — Google

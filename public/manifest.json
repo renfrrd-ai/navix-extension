@@ -19,9 +19,16 @@
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
-  "permissions": ["storage", "identity", "bookmarks"],
+  "action": {
+    "default_title": "Open Navix Side Panel"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "permissions": ["storage", "identity", "sidePanel"],
   "host_permissions": [
     "https://us-central1-navix-4771e.cloudfunctions.net/*",
+    "https://intent-router.abacusai.app/*",
     "https://*.googleapis.com/*",
     "https://*.firebaseapp.com/*",
     "https://*.gstatic.com/*",
@@ -30,6 +37,6 @@
     "https://www.googleapis.com/*"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://us-central1-navix-4771e.cloudfunctions.net https://*.googleapis.com https://*.firebaseapp.com https://*.gstatic.com https://*.google.com https://securetoken.googleapis.com https://www.googleapis.com; frame-src https://web.whatsapp.com https://mail.google.com https://calendar.google.com https://docs.google.com;"
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://us-central1-navix-4771e.cloudfunctions.net https://intent-router.abacusai.app https://*.googleapis.com https://*.firebaseapp.com https://*.gstatic.com https://*.google.com https://securetoken.googleapis.com https://www.googleapis.com;"
   }
 }

@@ -60,7 +60,7 @@ export default function AppHeader({
   const photo = user?.photoURL;
 
   return (
-    <header className="flex w-full items-center justify-between">
+    <header className="flex w-full items-center justify-between gap-4">
       <div className="flex items-center gap-[0.95rem]">
         <NavixLogo size={38} />
         <div className="flex flex-col leading-[1.1]">

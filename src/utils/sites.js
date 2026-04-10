@@ -497,5 +497,17 @@ export function findMentionedSite(sites, rawQuery) {
 }
 
 export function findExactPrefix(sites, prefix) {
-  return sites.find((s) => s.prefix && s.prefix === prefix) || null;
+  const normalized = String(prefix || "")
+    .trim()
+    .toLowerCase();
+  if (!normalized) return null;
+
+  return (
+    sites.find(
+      (s) =>
+        String(s?.prefix || "")
+          .trim()
+          .toLowerCase() === normalized,
+    ) || null
+  );
 }

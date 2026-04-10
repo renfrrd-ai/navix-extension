@@ -1,99 +1,106 @@
-import { getAuth } from "firebase/auth";
-import { app } from "./firebase";
+// Previous Firebase Functions proxy backend (disabled for now per request):
+// const NAVIX_PROXY_BASE = (import.meta.env.VITE_NAVIX_PROXY_URL || "")
+//   .trim()
+//   .replace(/\/+$/, "");
 
-const NAVIX_PROXY_BASE = (import.meta.env.VITE_NAVIX_PROXY_URL || "").trim();
+const INTENT_ROUTER_INTERPRET_URL =
+  "https://intent-router.abacusai.app/api/interpret";
+const REQUEST_TIMEOUT_MS = 12000;
 
-if (!NAVIX_PROXY_BASE) {
-  console.warn(
-    "[Navix Router] Missing VITE_NAVIX_PROXY_URL - AI routing will not work.",
-  );
-}
-
-function isAllowedProxyUrl(value) {
-  try {
-    const parsed = new URL(value);
-    if (parsed.protocol === "https:") return true;
-    return (
-      parsed.protocol === "http:" &&
-      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")
-    );
-  } catch {
-    return false;
-  }
-}
-
-async function getAuthToken() {
-  try {
-    const auth = getAuth(app);
-    const user = auth.currentUser;
-
-    if (user) {
-      return await user.getIdToken();
-    }
-  } catch (err) {
-    console.warn("[Auth Token Error]", err.message);
-  }
-
-  return null;
-}
-
-function buildHeaders(token) {
-  const headers = {
+function buildHeaders() {
+  return {
     "Content-Type": "application/json",
   };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  return headers;
 }
 
-async function navixRequest(path, body) {
-  if (!NAVIX_PROXY_BASE) {
-    throw new Error("Missing VITE_NAVIX_PROXY_URL for Navix API proxy.");
+function stringifyApiMessage(value, fallback = "Navix API error") {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed) return trimmed;
   }
 
-  if (!isAllowedProxyUrl(NAVIX_PROXY_BASE)) {
-    throw new Error(
-      "Invalid VITE_NAVIX_PROXY_URL. Use HTTPS (or localhost for dev).",
-    );
-  }
-
-  const token = await getAuthToken();
-  const headers = buildHeaders(token);
-
-  const res = await fetch(`${NAVIX_PROXY_BASE}${path}`, {
-    method: "POST",
-    headers,
-    cache: "no-store",
-    credentials: "omit",
-    referrerPolicy: "no-referrer",
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    // Handle rate limit error specifically
-    if (res.status === 429) {
-      const data = await res.json();
-      const err = new Error(data.message || "Rate limit exceeded");
-      err.code = data.code || "RATE_LIMIT_EXCEEDED";
-      err.status = 429;
-      err.retryAfter = data.retryAfter;
-      throw err;
+  if (value && typeof value === "object") {
+    if (typeof value.message === "string" && value.message.trim()) {
+      return value.message.trim();
+    }
+    if (typeof value.error === "string" && value.error.trim()) {
+      return value.error.trim();
     }
 
-    let message = `Navix API error: ${res.status}`;
+    try {
+      const serialized = JSON.stringify(value);
+      if (serialized && serialized !== "{}") return serialized;
+    } catch {
+      // Ignore serialization failures and use fallback.
+    }
+  }
+
+  return fallback;
+}
+
+function makeTimeoutSignal(timeoutMs = REQUEST_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return {
+    signal: controller.signal,
+    cleanup: () => clearTimeout(timer),
+  };
+}
+
+async function intentRouterRequest(body) {
+  const headers = buildHeaders();
+  const { signal, cleanup } = makeTimeoutSignal();
+
+  let res;
+  try {
+    res = await fetch(INTENT_ROUTER_INTERPRET_URL, {
+      method: "POST",
+      headers,
+      cache: "no-store",
+      credentials: "omit",
+      referrerPolicy: "no-referrer",
+      signal,
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    if (err?.name === "AbortError") {
+      const timeoutErr = new Error("Intent router request timed out");
+      timeoutErr.code = "REQUEST_TIMEOUT";
+      timeoutErr.status = 0;
+      throw timeoutErr;
+    }
+
+    const networkErr = new Error(err?.message || "Intent router network error");
+    networkErr.code = "NETWORK_ERROR";
+    networkErr.status = 0;
+    throw networkErr;
+  } finally {
+    cleanup();
+  }
+
+  if (!res.ok) {
+    let message = `Intent router error: ${res.status}`;
+    let errorCode = "INTENT_ROUTER_ERROR";
+    let errorRetryAfter;
+
     try {
       const payload = await res.json();
-      if (typeof payload?.message === "string" && payload.message.trim()) {
-        message = payload.message;
+      message = stringifyApiMessage(payload?.message ?? payload, message);
+      if (typeof payload?.code === "string" && payload.code.trim()) {
+        errorCode = payload.code;
+      }
+      if (payload?.retryAfter != null) {
+        errorRetryAfter = payload.retryAfter;
       }
     } catch {
       // Ignore non-JSON error bodies and keep status-based message.
     }
 
-    throw new Error(message);
+    const err = new Error(message);
+    err.status = res.status;
+    err.code = errorCode;
+    err.retryAfter = errorRetryAfter;
+    throw err;
   }
 
   return res.json();
@@ -165,7 +172,7 @@ function normalizeInterpretResponse(data, rawQuery) {
  * Fast AI route to the best destination URL.
  */
 export async function routeQuery(query) {
-  const data = await navixRequest("/route", { query });
+  const data = await intentRouterRequest({ query });
 
   return normalizeInterpretResponse(data, query);
 }
@@ -174,7 +181,7 @@ export async function routeQuery(query) {
  * Deep research mode for finding the exact best resource URL.
  */
 export async function researchQuery(query) {
-  const data = await navixRequest("/research", { query });
+  const data = await intentRouterRequest({ query });
 
   return normalizeInterpretResponse(data, query);
 }
@@ -183,33 +190,19 @@ export async function researchQuery(query) {
  * Analyze a platform and return route definition metadata.
  */
 export async function createRouteDefinition(site) {
-  const data = await navixRequest("/create-route", {
-    name: site.name,
-    baseUrl: site.baseUrl,
-  });
-
-  const template =
-    data.template ||
-    data.searchUrl ||
-    data.search_url ||
-    data.queryTemplate ||
-    "";
-  const slugRules = data.slugRules || data.slug_rules || null;
-  const routeType =
-    data.routeType || data.route_type || (template ? "search" : "open");
-
   return {
-    ...data,
-    alias: data.prefix || site.alias || "",
-    platform: data.siteName || site.name,
-    baseUrl: data.baseUrl || site.baseUrl,
-    template,
-    routeType,
-    defaultUrl: data.defaultUrl || data.baseUrl || site.baseUrl,
-    slugRules,
-    capabilities: data.capabilities || {},
-    examples: Array.isArray(data.examples) ? data.examples : [],
-    explanation: data.explanation || "",
+    alias: site.alias || "",
+    platform: site.name,
+    siteName: site.name,
+    baseUrl: site.baseUrl,
+    template: "",
+    routeType: "open",
+    defaultUrl: site.baseUrl,
+    slugRules: null,
+    capabilities: { open: true, search: false },
+    examples: [],
+    explanation:
+      "Route template generation is disabled while direct interpret mode is enabled.",
   };
 }
 

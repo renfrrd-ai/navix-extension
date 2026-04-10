@@ -4,8 +4,6 @@ import AppFooter from "@/components/layout/AppFooter";
 import CommandBar from "@/components/command/CommandBar";
 import QuickLaunch from "@/components/sites/QuickLaunch";
 import HistoryList from "@/components/sites/HistoryList";
-import BookmarkStrip from "@/components/bookmarks/BookmarkStrip";
-import AppSidebar from "@/components/apps/AppSidebar";
 import AllLinksModal from "@/components/modals/AllLinksModal";
 import RearrangeModal from "@/components/modals/RearrangeModal";
 import HelpModal from "@/components/modals/HelpModal";
@@ -19,25 +17,8 @@ import { THEMES } from "@/utils/themes";
 const BACKGROUND_VIDEO_URL =
   "https://video-previews.elements.envatousercontent.com/895fd898-4df1-4d23-abcf-1bb088cdbab3/watermarked_preview/watermarked_preview.mp4";
 
-const SCALE_OPTIONS = ["xs", "s", "m", "l", "xl"];
-const TEXT_SIZE_OPTIONS = ["xs", "s", "m", "l", "xl"];
-const UI_SCALE_MAP = {
-  xs: 0.88,
-  s: 0.94,
-  m: 1,
-  l: 1.07,
-  xl: 1.14,
-};
-const TEXT_SCALE_MAP = {
-  xs: 0.9,
-  s: 0.96,
-  m: 1,
-  l: 1.08,
-  xl: 1.16,
-};
 const BACKGROUND_OPTIONS = [
-  { id: "bgx-ocean", label: "Ocean Motion" },
-  { id: "bgx-calm", label: "Calm Motion" },
+  { id: "bgx-ocean", label: "Flowing Motion" },
   { id: "bgx-static", label: "Still Gradient" },
 ];
 
@@ -47,13 +28,9 @@ export default function NewTabPage() {
     userData,
     theme,
     font,
-    uiScale,
-    textScale,
     backgroundFx,
     timeFormat,
     setTheme,
-    setUiScale,
-    setTextScale,
     setBackgroundFx,
     setTimeFormat,
     showToast,
@@ -92,15 +69,7 @@ export default function NewTabPage() {
     root.classList.add(theme, font, backgroundFx);
     // Also apply font CSS var
     document.documentElement.style.setProperty("--font", getCSSFont(font));
-    document.documentElement.style.setProperty(
-      "--ui-scale",
-      String(UI_SCALE_MAP[uiScale] || 1),
-    );
-    document.documentElement.style.setProperty(
-      "--text-scale",
-      String(TEXT_SCALE_MAP[textScale] || 1),
-    );
-  }, [theme, font, uiScale, textScale, backgroundFx]);
+  }, [theme, font, backgroundFx]);
 
   useEffect(() => {
     try {
@@ -237,36 +206,6 @@ export default function NewTabPage() {
             </p>
 
             <div className="welcome-setup-group">
-              <div className="welcome-setup-label">Overall size</div>
-              <div className="welcome-chip-row">
-                {SCALE_OPTIONS.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => setUiScale(option)}
-                    className={`welcome-chip ${uiScale === option ? "active" : ""}`}
-                  >
-                    {option.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="welcome-setup-group">
-              <div className="welcome-setup-label">Text size</div>
-              <div className="welcome-chip-row">
-                {TEXT_SIZE_OPTIONS.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => setTextScale(option)}
-                    className={`welcome-chip ${textScale === option ? "active" : ""}`}
-                  >
-                    {option.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="welcome-setup-group">
               <div className="welcome-setup-label">Background animation</div>
               <div className="welcome-chip-row wrap">
                 {BACKGROUND_OPTIONS.map((option) => (
@@ -320,7 +259,7 @@ export default function NewTabPage() {
       )}
 
       <div className="app-scale-shell flex w-full justify-center">
-        <div className="flex w-full max-w-220 flex-col items-center gap-10">
+        <div className="flex w-full max-w-220 flex-col items-center gap-8">
           <div className="relative w-full">
             <AppHeader
               onAllLinks={() => setAllLinksOpen(true)}
@@ -362,17 +301,11 @@ export default function NewTabPage() {
               </div>
             )}
           </div>
-
-          <BookmarkStrip />
-
           <div
             className="relative flex flex-col items-center gap-[0.4rem] text-center"
             onClick={handleTimeAreaClick}
             title="Triple click to change clock style"
           >
-            <div className="text-[1.05rem] font-normal text-app-2">
-              {name ? `${greeting}, ${name.split(" ")[0]} 👋` : greeting}
-            </div>
             <div className="time-display-shell">
               {timeFormat === "analog" ? (
                 <div className="analog-clock" aria-label="Analog clock">
@@ -398,7 +331,11 @@ export default function NewTabPage() {
                   <span className="analog-clock-center" />
                 </div>
               ) : timeFormat === "binary" ? (
-                <div className="binary-clock" aria-label="Binary clock">
+                <div
+                  className="binary-clock"
+                  aria-label="Binary clock"
+                  title={timeStr}
+                >
                   {binaryDigits.map((bits, idx) => (
                     <div key={`digit-${idx}`} className="binary-digit-col">
                       {bits.split("").map((bit, bitIdx) => (
@@ -469,7 +406,6 @@ export default function NewTabPage() {
       </div>
 
       <AppFooter />
-      <AppSidebar />
       <AllLinksModal
         open={allLinksOpen}
         onClose={() => setAllLinksOpen(false)}

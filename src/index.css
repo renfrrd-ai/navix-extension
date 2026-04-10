@@ -490,9 +490,7 @@
   }
 
   .app-scale-shell {
-    transform: scale(var(--ui-scale));
-    transform-origin: top center;
-    width: calc(100% / var(--ui-scale));
+    width: 100%;
   }
 
   .bookmark-strip-shell {
@@ -506,7 +504,7 @@
 
   .analog-clock {
     position: relative;
-    width: clamp(140px, 16vw, 210px);
+    width: clamp(115px, 12.5vw, 165px);
     aspect-ratio: 1;
     border-radius: 9999px;
     border: 2px solid color-mix(in srgb, var(--accent) 55%, var(--border2));
@@ -532,8 +530,8 @@
   .analog-clock-hand {
     position: absolute;
     left: 50%;
-    top: 50%;
-    transform-origin: center calc(100% - 8px);
+    bottom: 50%;
+    transform-origin: 50% 100%;
     border-radius: 9999px;
     will-change: transform;
   }
@@ -541,21 +539,18 @@
   .analog-clock-hand.hour {
     width: 5px;
     height: 31%;
-    margin-top: -31%;
     background: #fff;
   }
 
   .analog-clock-hand.minute {
     width: 3px;
     height: 41%;
-    margin-top: -41%;
     background: color-mix(in srgb, var(--accent) 78%, white 22%);
   }
 
   .analog-clock-hand.second {
     width: 2px;
     height: 44%;
-    margin-top: -44%;
     background: color-mix(in srgb, var(--accent2) 84%, white 16%);
     opacity: 0.9;
   }
@@ -625,8 +620,8 @@
   }
 
   .time-display-shell {
-    width: clamp(230px, 30vw, 340px);
-    min-height: clamp(128px, 15vw, 176px);
+    width: clamp(190px, 23vw, 280px);
+    min-height: clamp(92px, 10.8vw, 126px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -634,7 +629,7 @@
 
   .time-display-digital {
     color: var(--text);
-    font-size: clamp(3rem, 7vw, 4.8rem);
+    font-size: clamp(3.5rem, 8.4vw, 5.8rem);
     font-weight: 300;
     line-height: 1;
     letter-spacing: -0.05em;
@@ -645,9 +640,9 @@
   .binary-clock {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: clamp(0.35rem, 0.9vw, 0.65rem);
+    gap: clamp(0.24rem, 0.62vw, 0.44rem);
     align-items: end;
-    padding: 0.5rem 0.6rem;
+    padding: 0.3rem 0.38rem;
   }
 
   .binary-digit-col {
@@ -658,8 +653,8 @@
   }
 
   .binary-dot {
-    width: clamp(8px, 1.2vw, 12px);
-    height: clamp(8px, 1.2vw, 12px);
+    width: clamp(10px, 1.5vw, 16px);
+    height: clamp(10px, 1.5vw, 16px);
     border-radius: 9999px;
     border: 1px solid var(--border2);
     transition: all 0.2s;
@@ -674,197 +669,6 @@
   .binary-dot.off {
     background: color-mix(in srgb, var(--bg3) 88%, black 12%);
     opacity: 0.7;
-  }
-
-  .bookmark-strip-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.42rem;
-  }
-
-  .bookmark-strip-title {
-    color: var(--text3);
-    font-size: 0.68rem;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    font-weight: 700;
-  }
-
-  .bookmark-add-btn {
-    width: 1.55rem;
-    height: 1.55rem;
-    border-radius: 8px;
-    border: 1px solid var(--border2);
-    background: var(--bg3);
-    color: var(--text2);
-    font-size: 1rem;
-    line-height: 1;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .bookmark-add-btn:hover {
-    border-color: var(--accent);
-    color: var(--text);
-    background: var(--accent-glow);
-  }
-
-  .bookmark-empty {
-    color: var(--text3);
-    font-size: 0.77rem;
-    padding: 0.3rem 0.1rem;
-  }
-
-  .bookmark-row {
-    display: flex;
-    align-items: center;
-    gap: 0.42rem;
-    overflow-x: auto;
-    padding-bottom: 0.2rem;
-  }
-
-  .bookmark-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.42rem;
-    min-width: 0;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--bg3);
-    color: var(--text2);
-    text-decoration: none;
-    padding: 0.38rem 0.52rem;
-    transition: all 0.2s;
-  }
-
-  .bookmark-pill:hover {
-    border-color: var(--accent);
-    color: var(--text);
-    background: var(--accent-glow);
-  }
-
-  .bookmark-favicon {
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
-    flex-shrink: 0;
-  }
-
-  .bookmark-label {
-    font-size: 0.75rem;
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .app-dock {
-    position: fixed;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 58;
-    display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    padding: 0.5rem;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    background: color-mix(in srgb, var(--bg2) 86%, black 14%);
-    backdrop-filter: blur(8px);
-  }
-
-  .app-dock-toggle,
-  .app-dock-btn {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--bg3);
-    color: var(--text2);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .app-dock-toggle {
-    font-size: 0.59rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-  }
-
-  .app-dock-btn.active,
-  .app-dock-toggle.active,
-  .app-dock-btn:hover,
-  .app-dock-toggle:hover {
-    border-color: var(--accent);
-    background: var(--accent-glow);
-    color: var(--text);
-  }
-
-  .app-sidebar-panel {
-    position: fixed;
-    right: 4.7rem;
-    top: 4.7rem;
-    bottom: 4.7rem;
-    width: min(430px, calc(100vw - 6.2rem));
-    z-index: 57;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border2);
-    border-radius: 16px;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--bg2) 86%, black 14%);
-    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.45);
-  }
-
-  .app-sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.65rem 0.72rem;
-    border-bottom: 1px solid var(--border);
-    background: color-mix(in srgb, var(--bg3) 90%, black 10%);
-  }
-
-  .app-sidebar-title {
-    color: var(--text);
-    font-size: 0.82rem;
-    font-weight: 600;
-  }
-
-  .app-sidebar-actions {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-  }
-
-  .app-sidebar-open-tab,
-  .app-sidebar-close {
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    background: var(--bg2);
-    color: var(--text2);
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0.3rem 0.55rem;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .app-sidebar-open-tab:hover,
-  .app-sidebar-close:hover {
-    border-color: var(--accent);
-    color: var(--text);
-    background: var(--accent-glow);
-  }
-
-  .app-sidebar-frame {
-    width: 100%;
-    height: 100%;
-    border: 0;
-    background: #0b0c10;
   }
 
   .bgx-calm .video-bg-media {
@@ -939,29 +743,6 @@
     }
 
     .app-scale-shell {
-      transform: none;
-      width: 100%;
-    }
-
-    .app-dock {
-      right: 0.7rem;
-      bottom: 0.7rem;
-      top: auto;
-      transform: none;
-      flex-direction: row;
-      width: auto;
-      padding: 0.45rem;
-    }
-
-    .app-sidebar-panel {
-      right: 0.7rem;
-      left: 0.7rem;
-      top: 4rem;
-      bottom: 5.2rem;
-      width: auto;
-    }
-
-    .bookmark-strip-shell {
       width: 100%;
     }
   }
