@@ -18,20 +18,6 @@ const GridIcon = () => (
     <rect x="14" y="14" width="7" height="7" />
   </svg>
 );
-const PlusIcon = () => (
-  <svg
-    width="15"
-    height="15"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-  >
-    <line x1="12" y1="5" x2="12" y2="19" />
-    <line x1="5" y1="12" x2="19" y2="12" />
-  </svg>
-);
 const SettingsIcon = () => (
   <svg
     width="15"
@@ -64,7 +50,6 @@ const HelpIcon = () => (
 
 export default function AppHeader({
   onAllLinks,
-  onAddSite,
   onSettings,
   onHelp,
   helpHighlighted = false,
@@ -76,13 +61,13 @@ export default function AppHeader({
 
   return (
     <header className="flex w-full items-center justify-between">
-      <div className="flex items-center gap-[0.78rem]">
-        <NavixLogo size={30} />
+      <div className="flex items-center gap-[0.95rem]">
+        <NavixLogo size={38} />
         <div className="flex flex-col leading-[1.1]">
-          <span className="gradient-text text-[1.5rem] font-bold tracking-[-0.03em]">
+          <span className="gradient-text text-[1.95rem] font-bold tracking-[-0.035em]">
             Navix
           </span>
-          <span className="text-[0.8rem] uppercase tracking-[0.08em] text-app-3">
+          <span className="text-[0.88rem] uppercase tracking-[0.09em] text-app-3">
             Smart Command Hub
           </span>
         </div>
@@ -91,9 +76,6 @@ export default function AppHeader({
       <div className="flex items-center gap-[0.45rem]">
         <IconButton onClick={onAllLinks} title="All Sites">
           <GridIcon />
-        </IconButton>
-        <IconButton onClick={onAddSite} title="Add site">
-          <PlusIcon />
         </IconButton>
         <IconButton onClick={onSettings} title="Settings">
           <SettingsIcon />

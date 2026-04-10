@@ -126,7 +126,8 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
           resolvedSearchUrl = routeTemplate;
         }
 
-        const routeKind = shortcutData.routeType === "search" ? "search" : "open";
+        const routeKind =
+          shortcutData.routeType === "search" ? "search" : "open";
         setStatus({
           msg:
             routeKind === "search"
@@ -150,9 +151,11 @@ export default function AddSiteModal({ open, onClose, editSite = null }) {
       prefix: cleanPrefix,
       emoji,
       logoUrl,
-      slugRules: shortcutData?.slugRules || shortcutData?.slug_rules || undefined,
+      slugRules:
+        shortcutData?.slugRules || shortcutData?.slug_rules || undefined,
       capabilities: shortcutData?.capabilities || undefined,
-      routeType: shortcutData?.routeType || (resolvedSearchUrl ? "search" : "open"),
+      routeType:
+        shortcutData?.routeType || (resolvedSearchUrl ? "search" : "open"),
       defaultUrl: shortcutData?.defaultUrl || baseUrl,
       bg: "#818cf8",
       ql: addToQL,

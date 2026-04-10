@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { researchQuery, routeQuery } from "@/services/router";
+import { routeQuery } from "@/services/router";
 import {
   buildSiteTargetUrl,
   findExactPrefix,
@@ -48,26 +48,39 @@ export function useCommand() {
     [sites],
   );
 
+  const getErrorMessage = useCallback((err) => {
+    if (err instanceof Error && typeof err.message === "string") {
+      return err.message;
+    }
+
+    if (typeof err?.message === "string") {
+      return err.message;
+    }
+
+    if (typeof err === "string") {
+      return err;
+    }
+
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return "unknown error";
+    }
+  }, []);
+
   // ── Badge state ───────────────────────────────────────────
   const raw = value;
   const trimmed = raw.trim();
-  const isDeepResearchInput = trimmed.startsWith("@");
   const firstWord = trimmed.split(" ")[0].toLowerCase();
   const matchSite = findExactPrefix(sites, firstWord);
-  const isNatural = !isDeepResearchInput && !matchSite && trimmed.length > 0;
-  const badgeLabel = trimmed
-    ? isDeepResearchInput
-      ? "Research"
-      : matchSite
-        ? matchSite.name
-        : "Google"
-    : null;
+  const isNatural = !matchSite && trimmed.length > 0;
+  const badgeLabel = trimmed ? (matchSite ? matchSite.name : "Google") : null;
 
   // ── Autocomplete suggestions ──────────────────────────────
   const updateSuggestions = useCallback(
     (input) => {
       const q = input.trim();
-      if (!q || q.includes(" ") || q.startsWith("@") || q.length < 1) {
+      if (!q || q.includes(" ") || q.length < 1) {
         setSugg([]);
         return;
       }
@@ -129,77 +142,34 @@ export function useCommand() {
 
       let fallbackQuery = q;
 
-      if (q.startsWith("@")) {
-        const researchInput = q.slice(1).trim();
-        if (!researchInput) {
-          showToast("Add a query after @ to run deep research.", "error");
-          return;
-        }
-        fallbackQuery = researchInput;
-
-        setAi(true);
-        try {
-          const data = await researchQuery(researchInput);
-          const matchedSite = resolveAiSite(data);
-          const url = data.fullUrl;
-
-          if (url) {
-            showToast(
-              `Route: Research -> ${data.domain || data.siteName || "Web"}`,
-            );
-            addHistory({
-              raw: q,
-              query: data.searchQuery || researchInput,
-              name: data.siteName || data.domain || "Web",
-              icon: matchedSite?.icon,
-              emoji: matchedSite?.emoji,
-              logoUrl: matchedSite?.logoUrl,
-              ai: true,
-            });
-            window.open(url, "_self");
-            return;
-          }
-        } catch (err) {
-          console.error("[Navix Research Routing Error]", {
-            message: err instanceof Error ? err.message : String(err),
-            code: err?.code,
-            status: err?.status,
-            timestamp: new Date().toISOString(),
-          });
-
-          if (err?.status === 429 || err?.code === "RATE_LIMIT_EXCEEDED") {
-            showToast(
-              "Rate limit reached. Please wait a minute before trying again.",
-              "error",
-            );
-          } else {
-            showToast(
-              "Research routing failed, falling back to Google",
-              "error",
-            );
-          }
-        } finally {
-          setAi(false);
-        }
-
-        showToast("Route: Google fallback", "error");
-        addHistory({
-          raw: q,
-          query: fallbackQuery,
-          name: "Google",
-          icon: "google",
-          ai: false,
-        });
-        window.open(
-          `https://www.google.com/search?q=${encodeURIComponent(fallbackQuery)}`,
-          "_self",
-        );
-        return;
-      }
-
       const parts = q.split(" ");
       const first = parts[0].toLowerCase();
       const rest = parts.slice(1).join(" ").trim();
+
+      // 0. App aliases
+      if (first === "wa") {
+        if (!rest) {
+          showToast("Use wa <name or number>", "error");
+          return;
+        }
+
+        const digits = rest.replace(/\D/g, "");
+        const url =
+          digits.length >= 8
+            ? `https://wa.me/${digits}`
+            : `https://web.whatsapp.com/?navix_search=${encodeURIComponent(rest)}`;
+
+        showToast("Route: app alias -> WhatsApp");
+        addHistory({
+          raw: q,
+          query: rest,
+          name: "WhatsApp",
+          icon: "message-circle",
+          ai: false,
+        });
+        window.open(url, "_self");
+        return;
+      }
 
       // 1. Exact prefix
       const exactSite = findExactPrefix(sites, first);
@@ -249,8 +219,9 @@ export function useCommand() {
           return;
         }
       } catch (err) {
+        const errorMessage = getErrorMessage(err);
         console.error("[Navix AI Routing Error]", {
-          message: err instanceof Error ? err.message : String(err),
+          message: errorMessage,
           code: err?.code,
           status: err?.status,
           timestamp: new Date().toISOString(),
@@ -262,7 +233,7 @@ export function useCommand() {
             "error",
           );
         } else {
-          showToast("AI routing failed, falling back to Google", "error");
+          showToast(`AI routing failed: ${errorMessage}`, "error");
         }
       } finally {
         setAi(false);
@@ -282,7 +253,7 @@ export function useCommand() {
         "_self",
       );
     },
-    [sites, aiThinking, addHistory, showToast, resolveAiSite],
+    [sites, aiThinking, addHistory, showToast, resolveAiSite, getErrorMessage],
   );
 
   return {
@@ -293,7 +264,6 @@ export function useCommand() {
     setSugg,
     badgeLabel,
     isNatural,
-    isDeepResearchInput,
     inputRef,
     handleChange,
     handleKeyDown,

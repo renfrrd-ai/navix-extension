@@ -47,6 +47,10 @@ const VALID_FONT_IDS = new Set([
   "f-syne",
   "f-mono",
 ]);
+const VALID_UI_SCALES = new Set(["xs", "s", "m", "l", "xl"]);
+const VALID_TEXT_SCALES = new Set(["xs", "s", "m", "l", "xl"]);
+const VALID_BACKGROUND_FX = new Set(["bgx-ocean", "bgx-calm", "bgx-static"]);
+const VALID_TIME_FORMATS = new Set(["digital", "analog", "binary"]);
 
 function sanitizeText(value, maxLen = MAX_TEXT) {
   if (typeof value !== "string") return "";
@@ -173,6 +177,30 @@ function sanitizeUserPatch(input = {}) {
     const normalizedFont = normalizeId(input.font);
     if (VALID_FONT_IDS.has(normalizedFont)) {
       patch.font = normalizedFont;
+    }
+  }
+  if (typeof input.uiScale === "string") {
+    const normalizedUiScale = normalizeId(input.uiScale);
+    if (VALID_UI_SCALES.has(normalizedUiScale)) {
+      patch.uiScale = normalizedUiScale;
+    }
+  }
+  if (typeof input.textScale === "string") {
+    const normalizedTextScale = normalizeId(input.textScale);
+    if (VALID_TEXT_SCALES.has(normalizedTextScale)) {
+      patch.textScale = normalizedTextScale;
+    }
+  }
+  if (typeof input.backgroundFx === "string") {
+    const normalizedBackgroundFx = normalizeId(input.backgroundFx);
+    if (VALID_BACKGROUND_FX.has(normalizedBackgroundFx)) {
+      patch.backgroundFx = normalizedBackgroundFx;
+    }
+  }
+  if (typeof input.timeFormat === "string") {
+    const normalizedTimeFormat = normalizeId(input.timeFormat);
+    if (VALID_TIME_FORMATS.has(normalizedTimeFormat)) {
+      patch.timeFormat = normalizedTimeFormat;
     }
   }
   if (typeof input.devMode === "boolean") patch.devMode = input.devMode;
@@ -305,6 +333,10 @@ export function defaultUserDoc(user = {}) {
     savedLinks: [],
     theme: "t-midnight",
     font: "f-inter",
+    uiScale: "m",
+    textScale: "m",
+    backgroundFx: "bgx-ocean",
+    timeFormat: "digital",
     devMode: false,
     createdAt: new Date().toISOString(),
   };

@@ -37,6 +37,10 @@ export function useAuthListener() {
           useAppStore.setState({
             theme: data.theme || "t-midnight",
             font: data.font || "f-inter",
+            uiScale: data.uiScale || "m",
+            textScale: data.textScale || "m",
+            backgroundFx: data.backgroundFx || "bgx-ocean",
+            timeFormat: data.timeFormat || "digital",
             devMode: data.devMode ?? false,
           });
           loadHistory();
@@ -45,10 +49,7 @@ export function useAuthListener() {
             syncToFirestore(firebaseUser.uid).catch(() => {});
 
           syncTimeoutId = window.setTimeout(runSyncCheck, 5000);
-          syncIntervalId = window.setInterval(
-            runSyncCheck,
-            60 * 60 * 1000,
-          );
+          syncIntervalId = window.setInterval(runSyncCheck, 60 * 60 * 1000);
         } catch {
           resetAll();
         }

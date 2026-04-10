@@ -17,11 +17,6 @@ const HELP_CARDS = [
     desc: "g Google · yt YouTube · gh GitHub · rd Reddit · ig Instagram · maps Maps · wiki Wikipedia · and more.",
   },
   {
-    icon: "➕",
-    title: "Add Custom Sites",
-    desc: "Click + in the header. Enter a name and URL — the search URL is resolved automatically via AI.",
-  },
-  {
     icon: "🎨",
     title: "Themes & Fonts",
     desc: "Open Settings ⚙ to choose from 7 colour themes and 5 font styles. Your choices sync to your account.",

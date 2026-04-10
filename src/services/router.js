@@ -83,39 +83,81 @@ async function navixRequest(path, body) {
       throw err;
     }
 
-    throw new Error(`Navix API error: ${res.status}`);
+    let message = `Navix API error: ${res.status}`;
+    try {
+      const payload = await res.json();
+      if (typeof payload?.message === "string" && payload.message.trim()) {
+        message = payload.message;
+      }
+    } catch {
+      // Ignore non-JSON error bodies and keep status-based message.
+    }
+
+    throw new Error(message);
   }
 
   return res.json();
 }
 
+function unwrapPayload(data) {
+  if (!data || typeof data !== "object") return {};
+
+  if (data.data && typeof data.data === "object") return data.data;
+  if (data.result && typeof data.result === "object") return data.result;
+
+  return data;
+}
+
+function resolveUrl(data) {
+  const candidates = [
+    data.fullUrl,
+    data.url,
+    data.targetUrl,
+    data.destinationUrl,
+    data.redirectUrl,
+    data.link,
+    data.full_url,
+    data.target_url,
+    data.destination_url,
+  ];
+
+  return (
+    candidates.find((value) => typeof value === "string" && value.trim()) ||
+    null
+  );
+}
+
 function normalizeInterpretResponse(data, rawQuery) {
-  const url = data.fullUrl || data.url || null;
-  const domain = data.domain || "";
+  const payload = unwrapPayload(data);
+  const url = resolveUrl(payload);
+  const domain = payload.domain || "";
   const platform =
-    data.siteName ||
-    data.platform ||
+    payload.siteName ||
+    payload.platform ||
     (typeof domain === "string" && domain
       ? domain.replace(/^www\./i, "").split(".")[0]
       : "Web");
   const normalizedQuery =
-    data.searchQuery || data.normalized_query || data.query || rawQuery;
+    payload.searchQuery ||
+    payload.normalized_query ||
+    payload.query ||
+    rawQuery;
 
   return {
-    ...data,
+    ...payload,
     url,
     fullUrl: url,
     platform,
     siteName: platform,
     domain,
-    reasoning: data.reasoning || "",
-    title: data.title || "",
-    description: data.description || "",
-    relevanceScore: Number.isFinite(data.relevanceScore)
-      ? data.relevanceScore
+    reasoning: payload.reasoning || "",
+    title: payload.title || "",
+    description: payload.description || "",
+    relevanceScore: Number.isFinite(payload.relevanceScore)
+      ? payload.relevanceScore
       : null,
     searchQuery: normalizedQuery,
-    shortcut_used: Boolean(data.shortcut_used),
+    shortcut_used: Boolean(payload.shortcut_used),
   };
 }
 
@@ -147,7 +189,11 @@ export async function createRouteDefinition(site) {
   });
 
   const template =
-    data.template || data.searchUrl || data.search_url || data.queryTemplate || "";
+    data.template ||
+    data.searchUrl ||
+    data.search_url ||
+    data.queryTemplate ||
+    "";
   const slugRules = data.slugRules || data.slug_rules || null;
   const routeType =
     data.routeType || data.route_type || (template ? "search" : "open");

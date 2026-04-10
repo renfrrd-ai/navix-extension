@@ -2,7 +2,7 @@ import { useState } from "react";
 import { getSiteIconFrameStyle, SiteIcon } from "@/utils/icons.jsx";
 import useAppStore from "@/hooks/useAppStore";
 
-export default function SiteCard({ site, onEdit, onCmdFill }) {
+export default function SiteCard({ site, onCmdFill }) {
   const { toggleQL, removeSite, devMode, showToast } = useAppStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
@@ -81,13 +81,6 @@ export default function SiteCard({ site, onEdit, onCmdFill }) {
             style={{ top: menuPos.top, left: menuPos.left }}
           >
             {[
-              {
-                label: "Edit",
-                action: () => {
-                  setMenuOpen(false);
-                  onEdit(site);
-                },
-              },
               {
                 label: site.ql
                   ? "Remove from Quick Launch"

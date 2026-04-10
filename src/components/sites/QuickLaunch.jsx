@@ -1,7 +1,7 @@
 import useAppStore from "@/hooks/useAppStore";
 import SiteCard from "./SiteCard";
 
-export default function QuickLaunch({ onEdit, onCmdFill, onRearrange }) {
+export default function QuickLaunch({ onCmdFill, onRearrange }) {
   const { sites } = useAppStore();
   const qlSites = sites.filter((s) => s.ql);
 
@@ -21,12 +21,7 @@ export default function QuickLaunch({ onEdit, onCmdFill, onRearrange }) {
 
       <div className="grid grid-cols-6 gap-[0.9rem]">
         {qlSites.map((site) => (
-          <SiteCard
-            key={site.id}
-            site={site}
-            onEdit={onEdit}
-            onCmdFill={onCmdFill}
-          />
+          <SiteCard key={site.id} site={site} onCmdFill={onCmdFill} />
         ))}
       </div>
     </div>
