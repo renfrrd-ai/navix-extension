@@ -83,39 +83,89 @@ async function navixRequest(path, body) {
       throw err;
     }
 
-    throw new Error(`Navix API error: ${res.status}`);
+    let errorMessage = `Navix API error: ${res.status}`;
+    try {
+      const data = await res.json();
+      if (data?.message) {
+        errorMessage = data.message;
+      }
+    } catch {
+      // Keep generic HTTP status message when error body is not JSON.
+    }
+
+    throw new Error(errorMessage);
   }
 
   return res.json();
 }
 
+function unwrapPayload(payload) {
+  if (!payload || typeof payload !== "object") return {};
+
+  if (payload.data && typeof payload.data === "object") return payload.data;
+  if (payload.result && typeof payload.result === "object")
+    return payload.result;
+
+  return payload;
+}
+
+function pickResolvedUrl(payload) {
+  const candidates = [
+    payload.fullUrl,
+    payload.url,
+    payload.targetUrl,
+    payload.destinationUrl,
+    payload.redirectUrl,
+    payload.link,
+    payload.full_url,
+    payload.target_url,
+    payload.destination_url,
+  ];
+
+  const resolved = candidates.find(
+    (value) => typeof value === "string" && value.trim().length > 0,
+  );
+  if (resolved) return resolved;
+
+  if (typeof payload.domain === "string" && payload.domain.trim()) {
+    const domain = payload.domain.trim().replace(/^https?:\/\//i, "");
+    return `https://${domain}`;
+  }
+
+  return null;
+}
+
 function normalizeInterpretResponse(data, rawQuery) {
-  const url = data.fullUrl || data.url || null;
-  const domain = data.domain || "";
+  const payload = unwrapPayload(data);
+  const url = pickResolvedUrl(payload);
+  const domain = payload.domain || "";
   const platform =
-    data.siteName ||
-    data.platform ||
+    payload.siteName ||
+    payload.platform ||
     (typeof domain === "string" && domain
       ? domain.replace(/^www\./i, "").split(".")[0]
       : "Web");
   const normalizedQuery =
-    data.searchQuery || data.normalized_query || data.query || rawQuery;
+    payload.searchQuery ||
+    payload.normalized_query ||
+    payload.query ||
+    rawQuery;
 
   return {
-    ...data,
+    ...payload,
     url,
     fullUrl: url,
     platform,
     siteName: platform,
     domain,
-    reasoning: data.reasoning || "",
-    title: data.title || "",
-    description: data.description || "",
-    relevanceScore: Number.isFinite(data.relevanceScore)
-      ? data.relevanceScore
+    reasoning: payload.reasoning || "",
+    title: payload.title || "",
+    description: payload.description || "",
+    relevanceScore: Number.isFinite(payload.relevanceScore)
+      ? payload.relevanceScore
       : null,
     searchQuery: normalizedQuery,
-    shortcut_used: Boolean(data.shortcut_used),
+    shortcut_used: Boolean(payload.shortcut_used),
   };
 }
 
